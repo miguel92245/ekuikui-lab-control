@@ -304,4 +304,33 @@ body {
         font-size: 1rem;
         padding: 0.8rem;
     }
+
+    /* Estilo para a imagem do ISUPE */
+.logo-img {
+    max-width: 80px;
+    height: auto;
+    display: inline-block;
+    margin-bottom: 15px;
+}
+
+.logo-text {
+    margin-top: 10px;
+}
+
+.logo-icon {
+    font-size: 2rem;
+    background: linear-gradient(135deg, #ffd700, #ffb347);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin: 0 5px;
+}
+
+/* Ajuste para o título */
+.info-panel h1 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 2rem;
+    margin: 1rem 0;
+    color: #ffd700;
+}
 }
