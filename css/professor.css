@@ -1,0 +1,104 @@
+/* ESTILOS ESPECÍFICOS DO DASHBOARD PROFESSOR */
+
+.header {
+    background: linear-gradient(145deg, #1a1a2e, #16213e);
+    padding: 1rem 2rem;
+    border-radius: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.logo h2 {
+    color: #ffd700;
+    font-size: 1.3rem;
+}
+
+.user-info {
+    color: #ffd700;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.logout-btn {
+    background: none;
+    border: 1px solid #ffd700;
+    color: #ffd700;
+    padding: 6px 16px;
+    border-radius: 30px;
+    cursor: pointer;
+}
+
+.logout-btn:hover {
+    background: #ffd700;
+    color: #1a1a2e;
+}
+
+/* Card */
+.card {
+    background: white;
+    border-radius: 1.5rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.card h3 {
+    color: #1a1a2e;
+    margin-bottom: 1rem;
+    border-left: 4px solid #ffd700;
+    padding-left: 1rem;
+}
+
+/* Tabela de horário */
+.horario-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.horario-table th, .horario-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+    vertical-align: top;
+}
+
+.horario-table th {
+    background: #1a1a2e;
+    color: #ffd700;
+}
+
+.aula-card {
+    background: #fef9e6;
+    border-left: 3px solid #ffd700;
+    margin-bottom: 5px;
+    padding: 8px;
+    border-radius: 5px;
+    text-align: left;
+}
+
+.aula-card strong {
+    color: #1a1a2e;
+    font-size: 0.85rem;
+}
+
+.aula-card small {
+    color: #666;
+    font-size: 0.7rem;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    .horario-table th, .horario-table td {
+        font-size: 0.7rem;
+        padding: 6px;
+    }
+}
