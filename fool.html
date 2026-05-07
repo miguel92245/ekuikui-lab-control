@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EKuikui II</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+
+    <div class="login">
+
+        <!-- Lado Esquerdo Informativo -->
+        <div class="Esquerdo">
+            <h1>Control Laboratorial <br> <span class="E">E</span>KUKUI II</h1>
+            <p>Gestão inteligente de laboratórios e salas de aula. Alocação automática, sem conflitos.</p>
+            <ul>
+                <li>Planeamento centralizado</li>
+                <li>4 laboratórios (1 grande + 3 pequenos)</li>
+                <li>Distribuição por horário semestral</li>
+                <li>Relatórios de ocupação</li>
+            </ul>
+        </div>
+
+        <!-- Lado Direito do Formulário -->
+        <div class="Direito">
+            <h2>BEM VINDO</h2>
+            <p class="subtitulo">PAINEL DE ACESSO</p>
+
+            <form action="/login" method="post">
+               
+                <input type="email" id="email" placeholder="E-mail institucional" required>
+        
+                <input type="password" id="password" placeholder="Senha" required>
+
+                <div class="opção">
+                    <label><input type="checkbox" id="remember"> Lembrar-me</label>
+                    <a href="#">Esqueceu a senha?</a>
+                </div>
+
+                <button type="submit" class="Botão"
+                onclick="Window.location.href='httts://www.f.html'">Entrar</button>
+
+                <p class="Opção-de-acesso">
+                    Ainda não tem acesso?<br>
+                    <a href="#">Solicitar à secretaria</a>
+                </p>
+            </form>
+        </div>
+    </div>
+   
+</body>
+</html>
