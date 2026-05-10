@@ -1,0 +1,172 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#f4f4f4;
+}
+
+.login-container{
+    width:1000px;
+    display:flex;
+    background:white;
+    border-radius:20px;
+    overflow:hidden;
+    box-shadow:0 10px 30px rgba(0,0,0,0.2);
+}
+
+/* esquerda */
+.info-panel{
+   
+    flex:1;
+    background:
+        linear-gradient(rgba(10, 45, 68, 0.8), rgba(10,31,68,0.8)),
+        url("Labo.jpg");
+
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
+
+    color:white;
+    padding:40px;
+}
+
+
+.info-panel h1{
+    font-size:40px;
+    margin-bottom:20px;
+}
+
+.feature-list{
+    margin-top:20px;
+}
+
+.feature-list li{
+    margin:15px 0;
+}
+
+/* direita */
+.form-panel{
+    flex:1;
+    padding:40px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+}
+
+.logo-top{
+    text-align:center;
+    margin-bottom:20px;
+    
+}
+
+.logo-top img{
+    width:180px;
+    max-width: 100%;
+
+}
+
+.form-panel h2{
+    margin-bottom:10px;
+}
+
+.subtitle{
+    margin-bottom:20px;
+    color:gray;
+}
+
+.input-group{
+    margin-bottom:15px;
+}
+
+.input-group input{
+    width:100%;
+    padding:12px;
+    border:1px solid #ccc;
+    border-radius:10px;
+}
+
+/* opções */
+.options{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:20px;
+    font-size:14px;
+}
+
+/* botão */
+.login-btn{
+    width:100%;
+    padding:12px;
+    border:none;
+    background:#0a1f44;
+    color:white;
+    border-radius:10px;
+    cursor:pointer;
+}
+
+.login-btn:hover{
+    background:#16336d;
+}
+
+.register-info{
+    text-align:center;
+    margin-top:20px;
+}
+
+/* RESPONSIVO */
+@media(max-width:768px){
+
+    .login-container{
+        flex-direction:column;
+        width:95%;
+    }
+
+    .info-panel{
+        text-align:center;
+    }
+}
+/* efeitos decorativos */
+.bg-effects{
+    position:absolute;
+    inset:0;
+    overflow:hidden;
+    z-index:0;
+}
+
+.bg-effects span{
+    position:absolute;
+    border-radius:50%;
+    background:rgba(255,255,255,0.05);
+}
+
+/* círculo 1 */
+.bg-effects span:nth-child(1){
+    width:220px;
+    height:220px;
+    top:-60px;
+    left:-60px;
+}
+
+/* círculo 2 */
+.bg-effects span:nth-child(2){
+    width:180px;
+    height:180px;
+    bottom:-50px;
+    right:-50px;
+}
+
+/* círculo 3 */
+.bg-effects span:nth-child(3){
+    width:120px;
+    height:120px;
+    top:40%;
+    right:10%;
+}
