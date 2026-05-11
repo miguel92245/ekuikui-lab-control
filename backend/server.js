@@ -15,7 +15,7 @@ app.use('/api/auth', authRoutes);
 
 // Rota de teste (saúde)
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'OK', message: 'Backend com MySQL está funcionando!' });
+    
 });
 
 const PORT = process.env.PORT || 5000;
