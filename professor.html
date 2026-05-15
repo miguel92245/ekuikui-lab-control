@@ -24,27 +24,13 @@
             <button id="logoutBtn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Sair</button>
         </div>
     </div>
-
-    <!-- Estatísticas -->
-    <div class="stats">
-        <div class="stat-card"><h3 id="totalDisciplinas">0</h3><p>Disciplinas</p></div>
-        <div class="stat-card"><h3 id="totalAulas">0</h3><p>Aulas Práticas</p></div>
-        <div class="stat-card"><h3 id="totalHorarios">0</h3><p>Aulas Alocadas</p></div>
-    </div>
-
-    <!-- Alterar Senha -->
-    <div class="glass-card">
-        <h3 class="card-title"><i class="fas fa-key"></i> Alterar Senha</h3>
-        <div class="form-inline">
-            <input type="password" id="novaSenha" placeholder="Nova senha" class="input-field">
-            <button id="alterarSenhaBtn" class="btn btn-primary"><i class="fas fa-save"></i> Alterar</button>
-        </div>
-    </div>
-
-    <!-- Minhas Disciplinas -->
-    <div class="glass-card">
-        <h3 class="card-title"><i class="fas fa-book-open"></i> Minhas Disciplinas</h3>
-        <div id="listaDisciplinas" class="disciplinas-grid"></div>
+<!-- Botões de ação ) -->
+    <div class="actions">
+        <button class="btn btn-primary" onclick="abrirModal('modalProfessor')"><i class="fas fa-user-plus"></i> Disciplinas</button>
+        <button class="btn btn-primary" onclick="abrirModal('modalTurma')"><i class="fas fa-users"></i> Número de Aulas</button>
+        <button class="btn btn-primary" onclick="abrirModal('modalSala')"><i class="fas fa-building"></i> Percentual</button>
+        <button class="btn btn-primary" onclick="abrirModal('modalLab')"><i class="fas fa-microchip"></i> Dias de Aulas</button>
+        <button class="btn btn-primary" onclick="abrirModal('modalLab')"><i class="fas fa-microchip"></i> Tempos</button>
     </div>
 
     <!-- Horário Semestral -->
@@ -59,6 +45,61 @@
             </table>
         </div>
     </div>
+<!-- MODAL PROFESSOR (com campo disciplinas) -->
+<div id="modalProfessor" class="modal">
+    <div class="modal-content">
+        <h3>Cadastrar Disciplinas</h3>
+        <form id="formProfessor">
+            <div class="form-group"><label>Nome</label><input type="text" id="profNome" required></div>
+            <div class="form-group"><label>Email</label><input type="email" id="profEmail" required></div>
+            <div class="form-group"><label>Senha</label><input type="text" id="profSenha" value="123456" required></div>
+            <div class="form-group"><label>Disciplinas (separadas por vírgula)</label><input type="text" id="profDisciplinas" placeholder="Ex: Programação Web, Base de Dados"></div>
+            <button type="submit" class="btn btn-primary">Cadastrar</button>
+        </form>
+        <button onclick="fecharModal('modalProfessor')" class="btn-cancel">Cancelar</button>
+    </div>
+</div>
+
+<!-- MODAL TURMA -->
+<div id="modalTurma" class="modal">
+    <div class="modal-content">
+        <h3>Cadastrar Turma</h3>
+        <form id="formTurma">
+            <div class="form-group"><label>Nome da Turma</label><input type="text" id="turmaNome" required></div>
+            <div class="form-group"><label>Curso</label><input type="text" id="turmaCurso" required></div>
+            <div class="form-group"><label>Nº de Alunos</label><input type="number" id="turmaAlunos" required></div>
+            <button type="submit" class="btn btn-primary">Cadastrar</button>
+        </form>
+        <button onclick="fecharModal('modalTurma')" class="btn-cancel">Cancelar</button>
+    </div>
+</div>
+
+<!-- MODAL SALA -->
+<div id="modalSala" class="modal">
+    <div class="modal-content">
+        <h3>Cadastrar Sala</h3>
+        <form id="formSala">
+            <div class="form-group"><label>Nome da Sala</label><input type="text" id="salaNome" required></div>
+            <div class="form-group"><label>Capacidade</label><input type="number" id="salaCapacidade" required></div>
+            <button type="submit" class="btn btn-primary">Cadastrar</button>
+        </form>
+        <button onclick="fecharModal('modalSala')" class="btn-cancel">Cancelar</button>
+    </div>
+</div>
+
+<!-- MODAL LABORATÓRIO -->
+<div id="modalLab" class="modal">
+    <div class="modal-content">
+        <h3>Cadastrar Laboratório</h3>
+        <form id="formLab">
+            <div class="form-group"><label>Nome</label><input type="text" id="labNome" required></div>
+            <div class="form-group"><label>Capacidade</label><input type="number" id="labCap" required></div>
+            <button type="submit" class="btn btn-primary">Cadastrar</button>
+        </form>
+        <button onclick="fecharModal('modalLab')" class="btn-cancel">Cancelar</button>
+    </div>
+</div>
+
 
     <!-- Reclamação -->
     <div class="glass-card">

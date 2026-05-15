@@ -1,4 +1,14 @@
-/* professor.css - mesmo estilo da secretaria */
+
+/* Botões de ação */
+.actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+/* professor.css*/
 
 .dashboard-container {
     max-width: 1400px;
