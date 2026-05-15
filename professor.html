@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="css/professor.css">
 </head>
 <body>
-<div class="container">
+<div class="dashboard-container">
     <div class="header">
         <div class="logo"><h2><i class="fas fa-chalkboard-user"></i> EKuikui Lab Control</h2></div>
         <div class="user-info">
@@ -24,10 +24,67 @@
             <button id="logoutBtn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Sair</button>
         </div>
     </div>
-    
-    <div class="card">
-        <h3><i class="fas fa-calendar-week"></i> Meu Horário Semanal</h3>
-        <div id="horarioDisplay"></div>
+
+    <!-- Estatísticas -->
+    <div class="stats">
+        <div class="stat-card"><h3 id="totalDisciplinas">0</h3><p>Disciplinas</p></div>
+        <div class="stat-card"><h3 id="totalAulas">0</h3><p>Aulas Práticas</p></div>
+        <div class="stat-card"><h3 id="totalHorarios">0</h3><p>Aulas Alocadas</p></div>
+    </div>
+
+    <!-- Alterar Senha -->
+    <div class="glass-card">
+        <h3 class="card-title"><i class="fas fa-key"></i> Alterar Senha</h3>
+        <div class="form-inline">
+            <input type="password" id="novaSenha" placeholder="Nova senha" class="input-field">
+            <button id="alterarSenhaBtn" class="btn btn-primary"><i class="fas fa-save"></i> Alterar</button>
+        </div>
+    </div>
+
+    <!-- Minhas Disciplinas -->
+    <div class="glass-card">
+        <h3 class="card-title"><i class="fas fa-book-open"></i> Minhas Disciplinas</h3>
+        <div id="listaDisciplinas" class="disciplinas-grid"></div>
+    </div>
+
+    <!-- Horário Semestral -->
+    <div class="glass-card">
+        <h3 class="card-title"><i class="fas fa-calendar-alt"></i> Horário Semestral</h3>
+        <div class="table-wrapper">
+            <table class="data-table" id="tabelaHorario">
+                <thead>
+                    <tr><th>Dia</th><th>Disciplina</th><th>Turma</th><th>Horário</th><th>Laboratório</th></tr>
+                </thead>
+                <tbody id="horarioBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Reclamação -->
+    <div class="glass-card">
+        <h3 class="card-title"><i class="fas fa-exclamation-triangle"></i> Reclamação</h3>
+        <textarea id="reclamacaoMsg" rows="3" class="textarea-field" placeholder="Escreva sua reclamação..."></textarea>
+        <button id="reclamarBtn" class="btn btn-warning"><i class="fas fa-paper-plane"></i> Enviar Reclamação</button>
+    </div>
+</div>
+
+<!-- Modal Configurar Disciplina -->
+<div id="modalConfig" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitulo">Configurar Disciplina</h3>
+            <span class="close-modal" onclick="fecharModal()">&times;</span>
+        </div>
+        <div class="form-group"><label>Nº Total de Aulas no Semestre</label><input type="number" id="totalAulas" class="input-field" placeholder="Ex: 14"></div>
+        <div class="form-group"><label>Percentagem de Aulas Práticas (Máx 80%)</label><input type="number" id="percPratica" class="input-field" placeholder="Ex: 60"></div>
+        <div class="form-group"><label>Percentagem de Aulas Teóricas</label><input type="number" id="percTeorica" class="input-field" placeholder="Ex: 40" readonly></div>
+        <div class="form-group"><label>Dias da Semana</label><div class="dias-group" id="diasCheckbox"></div></div>
+        <div class="form-group"><label>Hora Início</label><input type="time" id="horaInicio" class="input-field"></div>
+        <div class="form-group"><label>Hora Fim</label><input type="time" id="horaFim" class="input-field"></div>
+        <div class="modal-buttons">
+            <button id="salvarConfigBtn" class="btn btn-primary">Salvar</button>
+            <button onclick="fecharModal()" class="btn btn-danger">Cancelar</button>
+        </div>
     </div>
 </div>
 
