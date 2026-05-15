@@ -5,6 +5,8 @@ let laboratorios = [];
 let salas = [];
 let alocacoes = [];
 let conflitos = [];
+let configDisciplinas = [];
+let reclamacoes = [];
 let nextId = { professor: 1, turma: 1, lab: 1, sala: 1 };
 
 const dias = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"];
@@ -31,6 +33,8 @@ function carregarDados() {
         salas = obj.salas || [];
         alocacoes = obj.alocacoes || [];
         conflitos = obj.conflitos || [];
+        configDisciplinas = obj.configDisciplinas || [];
+        reclamacoes = obj.reclamacoes || [];
         nextId = obj.nextId || { professor: professores.length+1, turma: turmas.length+1, lab: laboratorios.length+1, sala: salas.length+1 };
     }
     renderizarTudo();
@@ -38,7 +42,7 @@ function carregarDados() {
 
 function salvarDados() {
     localStorage.setItem("ekuikuiLabData", JSON.stringify({ 
-        professores, turmas, laboratorios, salas, alocacoes, conflitos, nextId 
+        professores, turmas, laboratorios, salas, alocacoes, conflitos, configDisciplinas, reclamacoes, nextId 
     }));
 }
 
@@ -49,6 +53,8 @@ function renderizarTudo() {
     renderizarLaboratorios();
     renderizarEstatisticas();
     renderizarConflitos();
+    renderizarConfigProfessores();
+    renderizarReclamacoes();
 }
 
 function renderizarEstatisticas() {
@@ -151,13 +157,47 @@ function renderizarConflitos() {
     container.innerHTML = html;
 }
 
+function renderizarConfigProfessores() {
+    const tbody = document.querySelector("#tabelaConfig tbody");
+    if (!tbody) return;
+    if (configDisciplinas.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5">Nenhuma configuração enviada pelos professores</td></tr>';
+        return;
+    }
+    let html = '';
+    for (let c of configDisciplinas) {
+        html += `<tr>
+            <td>${c.professorNome}</td>
+            <td>${c.disciplina}</td>
+            <td>${c.totalAulas}</td>
+            <td>${c.percLab}%</td>
+            <td>${c.percConf}%</td>
+        </tr>`;
+    }
+    tbody.innerHTML = html;
+}
+
+function renderizarReclamacoes() {
+    const container = document.getElementById("listaReclamacoes");
+    if (!container) return;
+    if (reclamacoes.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:2rem;">Nenhuma reclamação</div>';
+        return;
+    }
+    let html = '';
+    for (let r of reclamacoes) {
+        html += `<div class="conflito-card"><strong>${r.professorNome}</strong> (${r.data})<br>${r.mensagem}</div>`;
+    }
+    container.innerHTML = html;
+}
+
 // ==================== CRUD ====================
 function removerProfessor(id) { professores = professores.filter(p => p.id !== id); salvarDados(); renderizarTudo(); }
 function removerTurma(id) { turmas = turmas.filter(t => t.id !== id); salvarDados(); renderizarTudo(); }
 function removerSala(id) { salas = salas.filter(s => s.id !== id); salvarDados(); renderizarTudo(); }
 function removerLab(id) { laboratorios = laboratorios.filter(l => l.id !== id); salvarDados(); renderizarTudo(); }
 
-// ==================== CADASTROS (SEM ALERTAS) ====================
+// ==================== CADASTROS ====================
 document.getElementById("formProfessor").addEventListener("submit", (e) => {
     e.preventDefault();
     let nome = document.getElementById("profNome").value.trim();
@@ -219,8 +259,11 @@ document.getElementById("formLab").addEventListener("submit", (e) => {
 });
 
 // ==================== EVENTOS ====================
-document.getElementById("btnGerar").onclick = () => {};
-document.getElementById("btnPublicar").onclick = () => {};
+document.getElementById("btnGerar").onclick = () => { alert("Algoritmo de alocação será implementado em breve!"); };
+document.getElementById("btnPublicar").onclick = () => {
+    if (conflitos.length > 0) alert(`Ainda existem ${conflitos.length} conflitos. Resolva antes de publicar.`);
+    else alert("Planeamento publicado com sucesso!");
+};
 document.getElementById("logoutBtn").onclick = () => {
     localStorage.removeItem('labUser');
     window.location.href = 'index.html';

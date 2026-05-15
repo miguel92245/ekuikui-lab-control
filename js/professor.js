@@ -1,13 +1,12 @@
-// professor.js - versão com visual igual ao da secretaria
-
 let professorAtual = null;
 let professores = [];
-let disciplinas = [];
+let disciplinas = [];      // 👈 esta variável é essencial
+let turmas = [];
+let laboratorios = [];
 let configDisciplinas = [];
+let diasAulas = [];
 let reclamacoes = [];
 let alocacoes = [];
-
-const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"];
 
 function carregarDados() {
     const user = localStorage.getItem('labUser');
@@ -21,151 +20,140 @@ function carregarDados() {
         professores = obj.professores || [];
         disciplinas = obj.disciplinas || [];
         configDisciplinas = obj.configDisciplinas || [];
+        diasAulas = obj.diasAulas || [];
         reclamacoes = obj.reclamacoes || [];
         alocacoes = obj.alocacoes || [];
     }
-    renderizarDisciplinas();
     renderizarHorario();
-    atualizarEstatisticas();
 }
 
 function salvarDados() {
     const data = localStorage.getItem("ekuikuiLabData");
     let obj = data ? JSON.parse(data) : {};
     obj.configDisciplinas = configDisciplinas;
+    obj.diasAulas = diasAulas;
     obj.reclamacoes = reclamacoes;
     obj.alocacoes = alocacoes;
     localStorage.setItem("ekuikuiLabData", JSON.stringify(obj));
 }
 
-function atualizarEstatisticas() {
+function abrirUnidadeCurricular() {
     const disciplinasProf = disciplinas.filter(d => d.professorId === professorAtual.id);
-    document.getElementById("totalDisciplinas").innerText = disciplinasProf.length;
-    
-    const aulasPraticas = configDisciplinas.filter(c => c.professorId === professorAtual.id)
-        .reduce((sum, c) => sum + Math.round(c.totalAulas * (c.percPratica / 100)), 0);
-    document.getElementById("totalAulas").innerText = aulasPraticas;
-    
-    const aulasAlocadas = alocacoes.filter(a => a.professorNome === professorAtual.nome).length;
-    document.getElementById("totalHorarios").innerText = aulasAlocadas;
-}
-
-function renderizarDisciplinas() {
-    const disciplinasProf = disciplinas.filter(d => d.professorId === professorAtual.id);
-    const container = document.getElementById("listaDisciplinas");
+    const container = document.getElementById("listaDisciplinasModal");
     if (disciplinasProf.length === 0) {
-        container.innerHTML = "<div style='text-align:center; padding:2rem; color:#999;'>Nenhuma disciplina atribuída pela secretaria.</div>";
-        return;
+        container.innerHTML = "<p>Nenhuma disciplina atribuída pela secretaria.</p>";
+    } else {
+        let html = "";
+        for (let d of disciplinasProf) {
+            const config = configDisciplinas.find(c => c.professorId === professorAtual.id && c.disciplina === d.nome);
+            html += `<div class="disciplina-item-modal">
+                <div><strong>${d.nome}</strong><br><small>${config ? config.totalAulas + " aulas, Lab: " + config.percLab + "%, Conf: " + config.percConf + "%" : "Não configurado"}</small></div>
+                <button class="btn btn-primary" onclick="abrirConfigDisciplina('${d.nome}')">Configurar</button>
+            </div>`;
+        }
+        container.innerHTML = html;
     }
-    let html = "";
-    for (let d of disciplinasProf) {
-        const config = configDisciplinas.find(c => c.professorId === professorAtual.id && c.disciplina === d.nome);
-        html += `<div class="disciplina-card">
-            <div class="disciplina-info">
-                <h4>${d.nome}</h4>
-                <p>${config ? `${config.totalAulas} aulas, ${config.percPratica}% prática, ${config.percTeorica}% teórica` : "Não configurado"}</p>
-            </div>
-            <button class="btn btn-primary" onclick="abrirConfig('${d.nome}')"><i class="fas fa-cog"></i> Configurar</button>
-        </div>`;
-    }
-    container.innerHTML = html;
+    document.getElementById("modalUnidade").style.display = "flex";
 }
 
-function abrirConfig(disciplinaNome) {
+function abrirConfigDisciplina(disciplinaNome) {
     const config = configDisciplinas.find(c => c.professorId === professorAtual.id && c.disciplina === disciplinaNome);
-    document.getElementById("modalTitulo").innerText = `Configurar ${disciplinaNome}`;
+    document.getElementById("modalConfigTitulo").innerText = `Configurar ${disciplinaNome}`;
     document.getElementById("totalAulas").value = config ? config.totalAulas : "";
-    document.getElementById("percPratica").value = config ? config.percPratica : "";
-    document.getElementById("percTeorica").value = config ? (100 - config.percPratica) : "";
-    document.getElementById("horaInicio").value = config ? config.horaInicio : "";
-    document.getElementById("horaFim").value = config ? config.horaFim : "";
-    
-    let diasHtml = "";
-    for (let dia of diasSemana) {
-        let checked = config && config.dias && config.dias.includes(dia) ? "checked" : "";
-        diasHtml += `<label><input type="checkbox" value="${dia}" ${checked}> ${dia}</label>`;
-    }
-    document.getElementById("diasCheckbox").innerHTML = diasHtml;
-    
-    document.getElementById("modalConfig").dataset.disciplina = disciplinaNome;
-    document.getElementById("modalConfig").style.display = "flex";
+    document.getElementById("percLab").value = config ? config.percLab : "";
+    document.getElementById("percConf").value = config ? (100 - config.percLab) : "";
+    document.getElementById("modalConfigDisciplina").dataset.disciplina = disciplinaNome;
+    document.getElementById("modalConfigDisciplina").style.display = "flex";
 }
 
-document.getElementById("percPratica").addEventListener("input", function() {
-    let pratica = parseInt(this.value) || 0;
-    if (pratica > 80) { pratica = 80; this.value = 80; }
-    document.getElementById("percTeorica").value = 100 - pratica;
+document.getElementById("percLab").addEventListener("input", function() {
+    let lab = parseInt(this.value) || 0;
+    if (lab > 80) { lab = 80; this.value = 80; }
+    document.getElementById("percConf").value = 100 - lab;
 });
 
 document.getElementById("salvarConfigBtn").onclick = () => {
-    const disciplina = document.getElementById("modalConfig").dataset.disciplina;
+    const disciplina = document.getElementById("modalConfigDisciplina").dataset.disciplina;
     const totalAulas = parseInt(document.getElementById("totalAulas").value);
-    const percPratica = parseInt(document.getElementById("percPratica").value);
-    const percTeorica = parseInt(document.getElementById("percTeorica").value);
-    const horaInicio = document.getElementById("horaInicio").value;
-    const horaFim = document.getElementById("horaFim").value;
-    const dias = Array.from(document.querySelectorAll("#diasCheckbox input:checked")).map(cb => cb.value);
-    
-    if (!totalAulas || !percPratica || !horaInicio || !horaFim || dias.length === 0) {
-        alert("Preencha todos os campos!");
-        return;
-    }
-    
+    const percLab = parseInt(document.getElementById("percLab").value);
+    const percConf = parseInt(document.getElementById("percConf").value);
+    if (!totalAulas || !percLab) { alert("Preencha todos os campos"); return; }
     const index = configDisciplinas.findIndex(c => c.professorId === professorAtual.id && c.disciplina === disciplina);
-    const config = { professorId: professorAtual.id, professorNome: professorAtual.nome, disciplina, totalAulas, percPratica, percTeorica, dias, horaInicio, horaFim };
+    const config = { professorId: professorAtual.id, professorNome: professorAtual.nome, disciplina, totalAulas, percLab, percConf };
     if (index === -1) configDisciplinas.push(config);
     else configDisciplinas[index] = config;
-    
     salvarDados();
-    fecharModal();
-    renderizarDisciplinas();
-    atualizarEstatisticas();
+    fecharModal('modalConfigDisciplina');
     alert("Configuração salva!");
 };
 
-function fecharModal() { document.getElementById("modalConfig").style.display = "none"; }
+document.getElementById("btnUnidadeCurricular").onclick = () => abrirUnidadeCurricular();
+document.getElementById("btnDiasAulas").onclick = () => document.getElementById("modalDias").style.display = "flex";
+
+document.getElementById("salvarDiasBtn").onclick = () => {
+    const dataAula = document.getElementById("dataAula").value;
+    const horaInicio = document.getElementById("horaInicio").value;
+    const horaFim = document.getElementById("horaFim").value;
+    if (!dataAula || !horaInicio || !horaFim) { alert("Preencha todos os campos"); return; }
+    diasAulas.push({ professorId: professorAtual.id, data: dataAula, horaInicio, horaFim });
+    salvarDados();
+    fecharModal('modalDias');
+    document.getElementById("dataAula").value = "";
+    document.getElementById("horaInicio").value = "";
+    document.getElementById("horaFim").value = "";
+    alert("Dia de aula salvo!");
+};
 
 function renderizarHorario() {
     const minhasAulas = alocacoes.filter(a => a.professorNome === professorAtual.nome);
     const tbody = document.getElementById("horarioBody");
-    if (minhasAulas.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:2rem;">Nenhum horário publicado ainda. Aguarde a secretaria.</td></tr>';
-        return;
-    }
+    if (minhasAulas.length === 0) { tbody.innerHTML = '<tr><td colspan="5">Nenhum horário publicado</td></tr>'; return; }
     let html = "";
     for (let a of minhasAulas) {
-        html += `<tr>
-            <td>${a.dia}</td>
-            <td>${a.disciplina}</td>
-            <td>${a.turma || "N/A"}</td>
-            <td>${a.horaInicio} - ${a.horaFim}</td>
-            <td>${a.labNome} (${a.labCapacidade} lug.)</td>
-        </tr>`;
+        html += `<tr><td>${a.dia}</td><td>${a.disciplina}</td><td>${a.turma}</td><td>${a.horaInicio} - ${a.horaFim}</td><td>${a.labNome} (${a.labCapacidade} lug.)</td></tr>`;
     }
     tbody.innerHTML = html;
 }
 
-document.getElementById("alterarSenhaBtn").onclick = () => {
-    const novaSenha = document.getElementById("novaSenha").value.trim();
-    if (!novaSenha) { alert("Digite uma nova senha"); return; }
-    const idx = professores.findIndex(p => p.id === professorAtual.id);
-    if (idx !== -1) professores[idx].senha = novaSenha;
-    professorAtual.senha = novaSenha;
-    const data = localStorage.getItem("ekuikuiLabData");
-    if (data) { let obj = JSON.parse(data); obj.professores = professors; localStorage.setItem("ekuikuiLabData", JSON.stringify(obj)); }
-    document.getElementById("novaSenha").value = "";
-    alert("Senha alterada com sucesso!");
-};
-
 document.getElementById("reclamarBtn").onclick = () => {
-    const mensagem = document.getElementById("reclamacaoMsg").value.trim();
-    if (!mensagem) { alert("Escreva a reclamação"); return; }
-    reclamacoes.push({ id: Date.now(), professorId: professorAtual.id, professorNome: professorAtual.nome, mensagem, data: new Date().toLocaleString() });
+    const msg = document.getElementById("reclamacaoMsg").value.trim();
+    if (!msg) { alert("Escreva a reclamação"); return; }
+    reclamacoes.push({ id: Date.now(), professorId: professorAtual.id, professorNome: professorAtual.nome, mensagem: msg, data: new Date().toLocaleString() });
     salvarDados();
     document.getElementById("reclamacaoMsg").value = "";
     alert("Reclamação enviada!");
 };
 
 document.getElementById("logoutBtn").onclick = () => { localStorage.removeItem('labUser'); window.location.href = 'index.html'; };
-window.onclick = (e) => { if (e.target.classList.contains('modal')) fecharModal(); };
-carregarDados();
+function fecharModal(id) { document.getElementById(id).style.display = "none"; }
+window.onclick = (e) => { if (e.target.classList.contains('modal')) e.target.style.display = "none"; };
+function carregarDados() {
+    const user = localStorage.getItem('labUser');
+    if (!user) { window.location.href = 'index.html'; return; }
+    professorAtual = JSON.parse(user);
+    document.getElementById("profNome").innerText = professorAtual.nome;
+
+    const data = localStorage.getItem("ekuikuiLabData");
+    if (data) {
+        const obj = JSON.parse(data);
+        professores = obj.professores || [];
+        turmas = obj.turmas || [];
+        laboratorios = obj.laboratorios || [];
+        configDisciplinas = obj.configDisciplinas || [];
+        diasAulas = obj.diasAulas || [];
+        reclamacoes = obj.reclamacoes || [];
+        alocacoes = obj.alocacoes || [];
+
+        // 👇 IMPORTANTE: Buscar as disciplinas do professor atual
+        const professorLogado = professores.find(p => p.id === professorAtual.id);
+        if (professorLogado && professorLogado.disciplinas) {
+            disciplinas = professorLogado.disciplinas.map(d => ({
+                nome: d,
+                professorId: professorAtual.id
+            }));
+        } else {
+            disciplinas = [];
+        }
+    }
+    renderizarHorario();
+}

@@ -1,21 +1,10 @@
-
-/* Botões de ação */
-.actions {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    margin-bottom: 2rem;
-    flex-wrap: wrap;
-}
-
-/* professor.css*/
+/* professor.css */
 
 .dashboard-container {
     max-width: 1400px;
     margin: 0 auto;
 }
 
-/* Header */
 .header {
     background: linear-gradient(145deg, #1a1a2e, #16213e);
     padding: 1rem 2rem;
@@ -29,28 +18,29 @@
 .logo h2 { color: #ffd700; font-size: 1.3rem; }
 .logo h2 i { margin-right: 10px; }
 .user-info { background: rgba(255, 215, 0, 0.2); padding: 8px 20px; border-radius: 40px; color: #ffd700; display: flex; align-items: center; gap: 15px; }
-.logout-btn { background: none; border: 1px solid #ffd700; color: #ffd700; padding: 6px 16px; border-radius: 30px; cursor: pointer; transition: 0.2s; }
+.logout-btn { background: none; border: 1px solid #ffd700; color: #ffd700; padding: 6px 16px; border-radius: 30px; cursor: pointer; }
 .logout-btn:hover { background: #ffd700; color: #1a1a2e; }
 
-/* Estatísticas */
-.stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+.actions {
+    display: flex;
     gap: 1rem;
+    justify-content: center;
     margin-bottom: 2rem;
+    flex-wrap: wrap;
 }
-.stat-card {
-    background: white;
-    padding: 1rem;
-    border-radius: 1rem;
-    text-align: center;
-    border-left: 4px solid #ffd700;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+.btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 2rem;
+    cursor: pointer;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }
-.stat-card h3 { font-size: 2rem; color: #1a1a2e; }
-.stat-card p { color: #666; font-size: 0.8rem; }
+.btn-primary { background: linear-gradient(95deg, #ffd700, #ffb347); color: #1a1a2e; }
+.btn-warning { background: #f59e0b; color: white; }
 
-/* Glass Card */
 .glass-card {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(12px);
@@ -66,87 +56,39 @@
     padding-bottom: 0.5rem;
     border-bottom: 3px solid #ffd700;
     display: inline-block;
-    font-family: 'Poppins', sans-serif;
 }
 
-/* Formulários inline */
-.form-inline {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-    flex-wrap: wrap;
-}
-.input-field, .textarea-field {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #e2e8f0;
-    border-radius: 1rem;
-    font-family: 'Inter', sans-serif;
-    outline: none;
-}
-.input-field:focus, .textarea-field:focus {
-    border-color: #ffd700;
-    box-shadow: 0 0 0 3px rgba(255,215,0,0.2);
-}
-.textarea-field { width: 100%; }
-
-/* Botões */
-.btn {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 2rem;
-    cursor: pointer;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: 0.2s;
-}
-.btn-primary { background: linear-gradient(95deg, #ffd700, #ffb347); color: #1a1a2e; }
-.btn-warning { background: #f59e0b; color: white; }
-.btn-danger { background: #dc2626; color: white; }
-.btn-primary:hover, .btn-warning:hover { transform: scale(1.02); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-
-/* Tabelas */
-.table-wrapper { overflow-x: auto; border-radius: 1rem; }
+.table-wrapper { overflow-x: auto; }
 .data-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.85rem;
 }
 .data-table th {
     background: #1a1a2e;
     color: #ffd700;
-    padding: 12px 10px;
+    padding: 12px;
     text-align: left;
 }
 .data-table td {
     padding: 10px;
     border-bottom: 1px solid #e2e8f0;
-    vertical-align: middle;
 }
 .data-table tr:hover { background: #fef9e6; }
 
-/* Disciplinas Grid */
-.disciplinas-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 1rem;
-    margin-top: 1rem;
+.disciplinas-list-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
 }
-.disciplina-card {
+.disciplina-item-modal {
     background: #fef9e6;
     border-left: 4px solid #ffd700;
-    border-radius: 1rem;
     padding: 1rem;
+    border-radius: 1rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
-.disciplina-info h4 { color: #1a1a2e; margin-bottom: 0.3rem; font-size: 1rem; }
-.disciplina-info p { font-size: 0.75rem; color: #666; }
-
-/* Modal */
 .modal {
     display: none;
     position: fixed;
@@ -162,9 +104,7 @@
     border-radius: 1.5rem;
     padding: 2rem;
     width: 90%;
-    max-width: 550px;
-    max-height: 80vh;
-    overflow-y: auto;
+    max-width: 500px;
 }
 .modal-header {
     display: flex;
@@ -172,32 +112,23 @@
     align-items: center;
     margin-bottom: 1rem;
     border-bottom: 2px solid #ffd700;
-    padding-bottom: 0.5rem;
 }
 .close-modal { font-size: 1.5rem; cursor: pointer; color: #999; }
 .close-modal:hover { color: #dc2626; }
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; margin-bottom: 0.3rem; font-weight: 500; }
+.input-field, .textarea-field {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 1rem;
+    outline: none;
+}
+.input-field:focus { border-color: #ffd700; }
+.textarea-field { width: 100%; }
 .modal-buttons { display: flex; gap: 1rem; margin-top: 1rem; }
 
-/* Dias Checkbox */
-.dias-group {
-    display: flex;
-    gap: 0.8rem;
-    flex-wrap: wrap;
-}
-.dias-group label {
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-    font-weight: normal;
-    background: #f0f0f0;
-    padding: 5px 12px;
-    border-radius: 2rem;
-    cursor: pointer;
-}
-
-/* Responsividade */
 @media (max-width: 768px) {
     .header { flex-direction: column; gap: 1rem; text-align: center; }
-    .disciplinas-grid { grid-template-columns: 1fr; }
-    .stats { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+    .actions { flex-direction: column; align-items: center; }
 }
