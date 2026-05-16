@@ -13,7 +13,7 @@ app.use(express.json());
 const authRoutes = require('./routes/authRoutes');
 app.use('/api/auth', authRoutes);
 
-// Rota de teste (saúde)
+// Rota de teste ()
 app.get('/api/health', (req, res) => {
     
 });
