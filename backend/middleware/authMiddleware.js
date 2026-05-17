@@ -3,10 +3,8 @@ const jwt = require('jsonwebtoken');
 const authMiddleware = (req, res, next) => {
     const authHeader = req.headers.authorization;
     
-    // TESTE: Se não houver token, continua mesmo assim
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        req.user = { id: 2, nome: "Teste", tipo: "professor" };
-        return next();
+        return res.status(401).json({ message: 'Token não fornecido ou formato inválido' });
     }
     
     const token = authHeader.split(' ')[1];
@@ -16,8 +14,7 @@ const authMiddleware = (req, res, next) => {
         req.user = decoded;
         next();
     } catch (error) {
-        req.user = { id: 2, nome: "Teste", tipo: "professor" };
-        next();
+        return res.status(401).json({ message: 'Token inválido ou expirado' });
     }
 };
 
