@@ -6,15 +6,18 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Rotas
-const authRoutes = require('./routes/authRoutes');
-const professorRoutes = require('./routes/professorRoutes');
-
-app.use('/api/auth', authRoutes);
-app.use('/api/professor', professorRoutes);
-
+// Rota de teste
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'OK', message: 'Backend com MySQL está funcionando!' });
+    res.json({ status: 'OK', message: 'Backend funcionando!' });
+});
+
+// Rota de login (mantém a original)
+const authRoutes = require('./routes/authRoutes');
+app.use('/api/auth', authRoutes);
+
+// Rota do professor - simplificada
+app.get('/api/professor/disciplinas', (req, res) => {
+    res.json({ disciplinas: ["Programação Web", "Base de Dados"] });
 });
 
 const PORT = process.env.PORT || 5000;
