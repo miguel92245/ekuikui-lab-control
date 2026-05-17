@@ -15,7 +15,7 @@ exports.login = async (req, res) => {
             return res.status(401).json({ message: 'Credenciais inválidas' });
         }
 
-        // COMPARAÇÃO DIRETA (TEMPORÁRIA PARA TESTE)
+        // COMPARAÇÃO 
         if (user.senha !== senha) {
             return res.status(401).json({ message: 'Credenciais inválidas' });
         }

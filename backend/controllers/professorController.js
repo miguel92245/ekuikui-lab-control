@@ -3,7 +3,7 @@ const ConfigDisciplina = require('../models/ConfigDisciplina');
 const DiasAula = require('../models/DiasAula');
 const Reclamacao = require('../models/Reclamacao');
 
-// GET /api/professor/disciplinas
+// GET /api/do prof/disciplinas
 const getDisciplinas = async (req, res) => {
     try {
         const professorId = req.user.id;
@@ -19,7 +19,7 @@ const getDisciplinas = async (req, res) => {
     }
 };
 
-// POST /api/professor/config-disciplina
+// POST /api/prof/config-disciplina
 const saveConfigDisciplina = async (req, res) => {
     try {
         const { disciplina, totalAulas, percLab, percConf } = req.body;
@@ -45,7 +45,7 @@ const saveConfigDisciplina = async (req, res) => {
     }
 };
 
-// POST /api/professor/dias-aulas
+// POST /api/prof/dias-aulas
 const saveDiasAulas = async (req, res) => {
     try {
         const { data, horaInicio, horaFim } = req.body;
@@ -67,7 +67,7 @@ const saveDiasAulas = async (req, res) => {
     }
 };
 
-// POST /api/professor/reclamar
+// POST /api/prof/reclamar
 const saveReclamacao = async (req, res) => {
     try {
         const { mensagem } = req.body;
@@ -89,7 +89,7 @@ const saveReclamacao = async (req, res) => {
     }
 };
 
-// GET /api/professor/minhas-configuracoes
+// GET /api/prof/minhas-configuracoes
 const getMinhasConfiguracoes = async (req, res) => {
     try {
         const professorId = req.user.id;
@@ -105,7 +105,7 @@ const getMinhasConfiguracoes = async (req, res) => {
     }
 };
 
-// GET /api/professor/meus-dias
+// GET /api/prof/meus-dias
 const getMeusDias = async (req, res) => {
     try {
         const professorId = req.user.id;
@@ -121,7 +121,7 @@ const getMeusDias = async (req, res) => {
     }
 };
 
-// GET /api/professor/minhas-reclamacoes
+// GET /api/prof/minhas-reclamacoes
 const getMinhasReclamacoes = async (req, res) => {
     try {
         const professorId = req.user.id;
