@@ -2,7 +2,7 @@ const DisciplinaProfessor = require('../models/DisciplinaProfessor');
 
 exports.getDisciplinas = async (req, res) => {
     try {
-        const professorId = req.user.id; // Vem do middleware auth
+        const professorId = req.user.id;
         const disciplinas = await DisciplinaProfessor.findByProfessorId(professorId);
         
         res.json({
