@@ -1,6 +1,6 @@
 const DisciplinaProfessor = require('../models/DisciplinaProfessor');
 
-exports.getDisciplinas = async (req, res) => {
+const getDisciplinas = async (req, res) => {
     try {
         const professorId = req.user.id;
         const disciplinas = await DisciplinaProfessor.findByProfessorId(professorId);
@@ -14,3 +14,5 @@ exports.getDisciplinas = async (req, res) => {
         res.status(500).json({ message: 'Erro ao buscar disciplinas' });
     }
 };
+
+module.exports = { getDisciplinas };
