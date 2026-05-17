@@ -1,8 +1,6 @@
-
-
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs')
+const bcrypt = require('bcryptjs');
 
 exports.login = async (req, res) => {
     try {
@@ -16,16 +14,9 @@ exports.login = async (req, res) => {
         if (!user) {
             return res.status(401).json({ message: 'Credenciais inválidas' });
         }
-        /*
-        const verificarSenha = bcrypt.compare(senha,user.senha);
-        if(!verificaarSenha){
-        return res.status(401).json({message:"Senha invalida"})
-        }
-        
-        */
 
-        const senhaValida = await User.comparePassword(senha, user.senha);
-        if (!senhaValida) {
+        // COMPARAÇÃO DIRETA (TEMPORÁRIA PARA TESTE)
+        if (user.senha !== senha) {
             return res.status(401).json({ message: 'Credenciais inválidas' });
         }
 
