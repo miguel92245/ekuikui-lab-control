@@ -8,7 +8,7 @@ app.use(express.json());
 
 // ==================== ROTAS ====================
 
-// Rota de teste (saúde)
+// Rota de teste
 app.get('/api/health', (req, res) => {
     res.json({ status: 'OK', message: 'Backend funcionando!' });
 });
@@ -20,6 +20,10 @@ app.use('/api/auth', authRoutes);
 // Rotas do professor (com controller e middleware)
 const professorRoutes = require('./routes/professorRoutes');
 app.use('/api/professor', professorRoutes);
+
+// Rotas da secretaria (CRUD professores, turmas, laboratórios, salas)
+const secretariaRoutes = require('./routes/secretariaRoutes');
+app.use('/api/secretaria', secretariaRoutes);
 
 // ==================== INICIAR SERVIDOR ====================
 
