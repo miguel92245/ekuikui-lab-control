@@ -350,6 +350,20 @@ app.delete('/api/secretaria/salas/:id', async (req, res) => {
     }
 });
 
+// ==================== ROTAS DE ALOCAÇÃO ====================
+
+// Importar controllers de alocação
+const alocacaoController = require('./controllers/alocacaoController');
+
+// POST /api/alocacao/executar - Executar o algoritmo de alocação
+app.post('/api/alocacao/executar', alocacaoController.executarAlocacao);
+
+// GET /api/alocacao - Ver todas as alocações
+app.get('/api/alocacao', alocacaoController.getAlocacoes);
+
+// GET /api/alocacao/conflitos - Ver todos os conflitos
+app.get('/api/alocacao/conflitos', alocacaoController.getConflitos);
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`🚀 Servidor rodando na porta ${PORT}`);
