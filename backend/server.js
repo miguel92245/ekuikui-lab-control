@@ -27,8 +27,13 @@ app.get('/api/secretaria/teste', (req, res) => {
     res.json({ message: 'Rota da secretaria funcionando!' });
 });
 
-// Importar o model Professor
+// Importar os models
 const Professor = require('./models/Professor');
+const Turma = require('./models/Turma');
+const Laboratorio = require('./models/Laboratorio');
+const Sala = require('./models/Sala');
+
+// ==================== CRUD PROFESSORES ====================
 
 // GET /api/secretaria/professores - Listar todos os professores
 app.get('/api/secretaria/professores', async (req, res) => {
@@ -114,6 +119,234 @@ app.delete('/api/secretaria/professores/:id', async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Erro ao remover professor' });
+    }
+});
+
+// ==================== CRUD TURMAS ====================
+
+// GET /api/secretaria/turmas - Listar todas as turmas
+app.get('/api/secretaria/turmas', async (req, res) => {
+    try {
+        const turmas = await Turma.findAll();
+        res.json({ success: true, turmas });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Erro ao buscar turmas' });
+    }
+});
+
+// GET /api/secretaria/turmas/:id - Buscar turma por ID
+app.get('/api/secretaria/turmas/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const turma = await Turma.findById(id);
+        if (!turma) {
+            return res.status(404).json({ message: 'Turma não encontrada' });
+        }
+        res.json({ success: true, turma });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Erro ao buscar turma' });
+    }
+});
+
+// POST /api/secretaria/turmas - Criar turma
+app.post('/api/secretaria/turmas', async (req, res) => {
+    try {
+        const { nome, curso, numAlunos } = req.body;
+        if (!nome || !curso || !numAlunos) {
+            return res.status(400).json({ message: 'Nome, curso e número de alunos são obrigatórios' });
+        }
+        await Turma.create(nome, curso, numAlunos);
+        res.status(201).json({ success: true, message: 'Turma criada com sucesso' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Erro ao criar turma' });
+    }
+});
+
+// PUT /api/secretaria/turmas/:id - Atualizar turma
+app.put('/api/secretaria/turmas/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { nome, curso, numAlunos } = req.body;
+        const turma = await Turma.findById(id);
+        if (!turma) {
+            return res.status(404).json({ message: 'Turma não encontrada' });
+        }
+        await Turma.update(id, nome, curso, numAlunos);
+        res.json({ success: true, message: 'Turma atualizada com sucesso' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Erro ao atualizar turma' });
+    }
+});
+
+// DELETE /api/secretaria/turmas/:id - Remover turma
+app.delete('/api/secretaria/turmas/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const turma = await Turma.findById(id);
+        if (!turma) {
+            return res.status(404).json({ message: 'Turma não encontrada' });
+        }
+        await Turma.delete(id);
+        res.json({ success: true, message: 'Turma removida com sucesso' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Erro ao remover turma' });
+    }
+});
+
+// ==================== CRUD LABORATÓRIOS ====================
+
+// GET /api/secretaria/laboratorios - Listar todos os laboratórios
+app.get('/api/secretaria/laboratorios', async (req, res) => {
+    try {
+        const laboratorios = await Laboratorio.findAll();
+        res.json({ success: true, laboratorios });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Erro ao buscar laboratórios' });
+    }
+});
+
+// GET /api/secretaria/laboratorios/:id - Buscar laboratório por ID
+app.get('/api/secretaria/laboratorios/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const lab = await Laboratorio.findById(id);
+        if (!lab) {
+            return res.status(404).json({ message: 'Laboratório não encontrado' });
+        }
+        res.json({ success: true, laboratorio: lab });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Erro ao buscar laboratório' });
+    }
+});
+
+// POST /api/secretaria/laboratorios - Criar laboratório
+app.post('/api/secretaria/laboratorios', async (req, res) => {
+    try {
+        const { nome, capacidade } = req.body;
+        if (!nome || !capacidade) {
+            return res.status(400).json({ message: 'Nome e capacidade são obrigatórios' });
+        }
+        await Laboratorio.create(nome, capacidade);
+        res.status(201).json({ success: true, message: 'Laboratório criado com sucesso' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Erro ao criar laboratório' });
+    }
+});
+
+// PUT /api/secretaria/laboratorios/:id - Atualizar laboratório
+app.put('/api/secretaria/laboratorios/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { nome, capacidade } = req.body;
+        const lab = await Laboratorio.findById(id);
+        if (!lab) {
+            return res.status(404).json({ message: 'Laboratório não encontrado' });
+        }
+        await Laboratorio.update(id, nome, capacidade);
+        res.json({ success: true, message: 'Laboratório atualizado com sucesso' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Erro ao atualizar laboratório' });
+    }
+});
+
+// DELETE /api/secretaria/laboratorios/:id - Remover laboratório
+app.delete('/api/secretaria/laboratorios/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const lab = await Laboratorio.findById(id);
+        if (!lab) {
+            return res.status(404).json({ message: 'Laboratório não encontrado' });
+        }
+        await Laboratorio.delete(id);
+        res.json({ success: true, message: 'Laboratório removido com sucesso' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Erro ao remover laboratório' });
+    }
+});
+
+// ==================== CRUD SALAS ====================
+
+// GET /api/secretaria/salas - Listar todas as salas
+app.get('/api/secretaria/salas', async (req, res) => {
+    try {
+        const salas = await Sala.findAll();
+        res.json({ success: true, salas });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Erro ao buscar salas' });
+    }
+});
+
+// GET /api/secretaria/salas/:id - Buscar sala por ID
+app.get('/api/secretaria/salas/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const sala = await Sala.findById(id);
+        if (!sala) {
+            return res.status(404).json({ message: 'Sala não encontrada' });
+        }
+        res.json({ success: true, sala });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Erro ao buscar sala' });
+    }
+});
+
+// POST /api/secretaria/salas - Criar sala
+app.post('/api/secretaria/salas', async (req, res) => {
+    try {
+        const { nome, capacidade } = req.body;
+        if (!nome || !capacidade) {
+            return res.status(400).json({ message: 'Nome e capacidade são obrigatórios' });
+        }
+        await Sala.create(nome, capacidade);
+        res.status(201).json({ success: true, message: 'Sala criada com sucesso' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Erro ao criar sala' });
+    }
+});
+
+// PUT /api/secretaria/salas/:id - Atualizar sala
+app.put('/api/secretaria/salas/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { nome, capacidade } = req.body;
+        const sala = await Sala.findById(id);
+        if (!sala) {
+            return res.status(404).json({ message: 'Sala não encontrada' });
+        }
+        await Sala.update(id, nome, capacidade);
+        res.json({ success: true, message: 'Sala atualizada com sucesso' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Erro ao atualizar sala' });
+    }
+});
+
+// DELETE /api/secretaria/salas/:id - Remover sala
+app.delete('/api/secretaria/salas/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const sala = await Sala.findById(id);
+        if (!sala) {
+            return res.status(404).json({ message: 'Sala não encontrada' });
+        }
+        await Sala.delete(id);
+        res.json({ success: true, message: 'Sala removida com sucesso' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Erro ao remover sala' });
     }
 });
 
