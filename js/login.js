@@ -1,8 +1,8 @@
-// Credenciais dos utilizadores
+// login.js - versão corrigida
+
 const USERS = {
     'secretaria@ekuikui': { password: 'admin', type: 'secretaria', dashboard: 'secretaria.html', nome: 'Secretaria' },
-    'michael@2026': { password: '123456', type: 'professor', dashboard: 'professor.html', nome: 'Michael Ferreira' },
-    'julsuel@2026': { password: '123456', type: 'professor', dashboard: 'professor.html', nome: 'Julsuel Santos' }
+    'michael@2026': { password: '123456', type: 'professor', dashboard: 'professor.html', nome: 'Michael Ferreira' }
 };
 
 function showToast(msg, type) {
@@ -31,13 +31,14 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
     if (user && user.password === password) {
         showToast(`Bem-vindo, ${user.nome}! Redirecionando...`, 'success');
         
-        const sessionData = { email, tipo: user.type, nome: user.nome };
+        const sessionData = { 
+            id: email, 
+            nome: user.nome, 
+            email: email, 
+            tipo: user.type 
+        };
         
-        if (remember) {
-            localStorage.setItem('labUser', JSON.stringify(sessionData));
-        } else {
-            sessionStorage.setItem('labUser', JSON.stringify(sessionData));
-        }
+        localStorage.setItem('labUser', JSON.stringify(sessionData));
         
         setTimeout(() => {
             window.location.href = user.dashboard;
@@ -48,6 +49,7 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
     }
 });
 
+// Preencher email se houver saved (apenas para teste)
 window.addEventListener('load', () => {
     const saved = localStorage.getItem('labUser');
     if (saved) {
@@ -55,9 +57,6 @@ window.addEventListener('load', () => {
             const userData = JSON.parse(saved);
             document.getElementById('email').value = userData.email;
             document.getElementById('remember').checked = true;
-        } catch(e) {
-            document.getElementById('email').value = saved;
-            document.getElementById('remember').checked = true;
-        }
+        } catch(e) {}
     }
 });
