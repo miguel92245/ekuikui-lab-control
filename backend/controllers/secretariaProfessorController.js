@@ -5,10 +5,7 @@ const bcrypt = require('bcryptjs');
 const getAll = async (req, res) => {
     try {
         const professores = await Professor.findAll();
-        res.json({
-            success: true,
-            professores: professores
-        });
+        res.json({ success: true, professores });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Erro ao buscar professores' });
@@ -20,15 +17,10 @@ const getById = async (req, res) => {
     try {
         const { id } = req.params;
         const professor = await Professor.findById(id);
-        
         if (!professor) {
             return res.status(404).json({ message: 'Professor não encontrado' });
         }
-        
-        res.json({
-            success: true,
-            professor: professor
-        });
+        res.json({ success: true, professor });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Erro ao buscar professor' });
@@ -45,17 +37,11 @@ const create = async (req, res) => {
         }
         
         const senhaHash = await bcrypt.hash(senha, 10);
-        let disciplinasArray = [];
-        if (disciplinas) {
-            disciplinasArray = disciplinas.split(',').map(d => d.trim());
-        }
+        const disciplinasArray = disciplinas ? disciplinas.split(',').map(d => d.trim()) : [];
         
         await Professor.create(nome, email, senhaHash, disciplinasArray);
         
-        res.status(201).json({
-            success: true,
-            message: 'Professor criado com sucesso'
-        });
+        res.status(201).json({ success: true, message: 'Professor criado com sucesso' });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Erro ao criar professor' });
@@ -73,17 +59,10 @@ const update = async (req, res) => {
             return res.status(404).json({ message: 'Professor não encontrado' });
         }
         
-        let disciplinasArray = [];
-        if (disciplinas) {
-            disciplinasArray = disciplinas.split(',').map(d => d.trim());
-        }
-        
+        const disciplinasArray = disciplinas ? disciplinas.split(',').map(d => d.trim()) : [];
         await Professor.update(id, nome, email, disciplinasArray);
         
-        res.json({
-            success: true,
-            message: 'Professor atualizado com sucesso'
-        });
+        res.json({ success: true, message: 'Professor atualizado com sucesso' });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Erro ao atualizar professor' });
@@ -102,10 +81,7 @@ const remove = async (req, res) => {
         
         await Professor.delete(id);
         
-        res.json({
-            success: true,
-            message: 'Professor removido com sucesso'
-        });
+        res.json({ success: true, message: 'Professor removido com sucesso' });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Erro ao remover professor' });

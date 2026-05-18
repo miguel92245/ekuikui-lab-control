@@ -36,72 +36,50 @@ class Professor {
         return rows[0];
     }
 
-    // Criar professor
+    // Criar professor (versão simplificada, sem transação)
     static async create(nome, email, senhaHash, disciplinas) {
-        const connection = await db.getConnection();
-        try {
-            await connection.beginTransaction();
-            
-            // Inserir na tabela users
-            const [userResult] = await connection.execute(
-                'INSERT INTO users (nome, email, senha, tipo) VALUES (?, ?, ?, ?)',
-                [nome, email, senhaHash, 'professor']
-            );
-            const professorId = userResult.insertId;
-            
-            // Inserir disciplinas
-            if (disciplinas && disciplinas.length > 0) {
-                for (let disciplina of disciplinas) {
-                    await connection.execute(
-                        'INSERT INTO disciplinas_professor (professor_id, disciplina_nome) VALUES (?, ?)',
-                        [professorId, disciplina.trim()]
-                    );
-                }
+        // Inserir na tabela users
+        const [userResult] = await db.execute(
+            'INSERT INTO users (nome, email, senha, tipo) VALUES (?, ?, ?, ?)',
+            [nome, email, senhaHash, 'professor']
+        );
+        const professorId = userResult.insertId;
+
+        // Inserir disciplinas
+        if (disciplinas && disciplinas.length > 0) {
+            for (let disciplina of disciplinas) {
+                await db.execute(
+                    'INSERT INTO disciplinas_professor (professor_id, disciplina_nome) VALUES (?, ?)',
+                    [professorId, disciplina.trim()]
+                );
             }
-            
-            await connection.commit();
-            return professorId;
-        } catch (error) {
-            await connection.rollback();
-            throw error;
-        } finally {
-            connection.release();
         }
+
+        return professorId;
     }
 
     // Atualizar professor
     static async update(id, nome, email, disciplinas) {
-        const connection = await db.getConnection();
-        try {
-            await connection.beginTransaction();
-            
-            // Atualizar dados do user
-            await connection.execute(
-                'UPDATE users SET nome = ?, email = ? WHERE id = ?',
-                [nome, email, id]
-            );
-            
-            // Remover disciplinas antigas
-            await connection.execute('DELETE FROM disciplinas_professor WHERE professor_id = ?', [id]);
-            
-            // Inserir novas disciplinas
-            if (disciplinas && disciplinas.length > 0) {
-                for (let disciplina of disciplinas) {
-                    await connection.execute(
-                        'INSERT INTO disciplinas_professor (professor_id, disciplina_nome) VALUES (?, ?)',
-                        [id, disciplina.trim()]
-                    );
-                }
+        // Atualizar dados do user
+        await db.execute(
+            'UPDATE users SET nome = ?, email = ? WHERE id = ?',
+            [nome, email, id]
+        );
+
+        // Remover disciplinas antigas
+        await db.execute('DELETE FROM disciplinas_professor WHERE professor_id = ?', [id]);
+
+        // Inserir novas disciplinas
+        if (disciplinas && disciplinas.length > 0) {
+            for (let disciplina of disciplinas) {
+                await db.execute(
+                    'INSERT INTO disciplinas_professor (professor_id, disciplina_nome) VALUES (?, ?)',
+                    [id, disciplina.trim()]
+                );
             }
-            
-            await connection.commit();
-            return true;
-        } catch (error) {
-            await connection.rollback();
-            throw error;
-        } finally {
-            connection.release();
         }
+
+        return true;
     }
 
     // Remover professor
