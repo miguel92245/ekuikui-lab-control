@@ -1,83 +1,137 @@
-// Dados globais
+// secretaria.js - usando API (CORRIGIDO)
+
 let professores = [];
 let turmas = [];
 let laboratorios = [];
 let salas = [];
 let alocacoes = [];
 let conflitos = [];
-let configDisciplinas = [];
-let reclamacoes = [];
-let nextId = { professor: 1, turma: 1, lab: 1, sala: 1 };
 
-const dias = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"];
-const horarios = ["08:00", "09:30", "11:00", "13:30", "15:00", "16:30"];
-
-// Verificar login
-const userStr = localStorage.getItem('labUser');
-if (!userStr) { window.location.href = 'index.html'; }
-else {
+// ==================== CARREGAR DADOS INICIAIS ====================
+async function carregarDados() {
     try {
+        // Verificar login
+        const userStr = localStorage.getItem('labUser') || sessionStorage.getItem('labUser');
+        if (!userStr) {
+            window.location.href = 'index.html';
+            return;
+        }
+        
         const user = JSON.parse(userStr);
-        if (user.tipo !== 'secretaria') window.location.href = 'index.html';
-    } catch(e) { window.location.href = 'index.html'; }
-}
-
-// ==================== FUNÇÕES ====================
-function carregarDados() {
-    const data = localStorage.getItem("ekuikuiLabData");
-    if (data) {
-        const obj = JSON.parse(data);
-        professores = obj.professores || [];
-        turmas = obj.turmas || [];
-        laboratorios = obj.laboratorios || [];
-        salas = obj.salas || [];
-        alocacoes = obj.alocacoes || [];
-        conflitos = obj.conflitos || [];
-        configDisciplinas = obj.configDisciplinas || [];
-        reclamacoes = obj.reclamacoes || [];
-        nextId = obj.nextId || { professor: professores.length+1, turma: turmas.length+1, lab: laboratorios.length+1, sala: salas.length+1 };
+        if (user.tipo !== 'secretaria') {
+            window.location.href = 'index.html';
+            return;
+        }
+        
+        // Carregar todos os dados
+        await Promise.all([
+            carregarProfessores(),
+            carregarTurmas(),
+            carregarLaboratorios(),
+            carregarSalas(),
+            carregarAlocacoes(),
+            carregarConflitos()
+        ]);
+        
+        renderizarEstatisticas();
+        
+    } catch (error) {
+        console.error('Erro ao carregar dados:', error);
     }
-    renderizarTudo();
 }
 
-function salvarDados() {
-    localStorage.setItem("ekuikuiLabData", JSON.stringify({ 
-        professores, turmas, laboratorios, salas, alocacoes, conflitos, configDisciplinas, reclamacoes, nextId 
-    }));
+// ==================== CARREGAR PROFESSORES ====================
+async function carregarProfessores() {
+    try {
+        const data = await apiRequest('/secretaria/professores');
+        professores = data.professores || [];
+        renderizarProfessores();
+    } catch (error) {
+        console.error('Erro ao carregar professores:', error);
+        professores = [];
+        renderizarProfessores();
+    }
 }
 
-function renderizarTudo() {
-    renderizarProfessores();
-    renderizarTurmas();
-    renderizarSalas();
-    renderizarLaboratorios();
-    renderizarEstatisticas();
-    renderizarConflitos();
-    renderizarConfigProfessores();
-    renderizarReclamacoes();
+// ==================== CARREGAR TURMAS ====================
+async function carregarTurmas() {
+    try {
+        const data = await apiRequest('/secretaria/turmas');
+        turmas = data.turmas || [];
+        renderizarTurmas();
+    } catch (error) {
+        console.error('Erro ao carregar turmas:', error);
+        turmas = [];
+        renderizarTurmas();
+    }
 }
 
-function renderizarEstatisticas() {
-    document.getElementById("totalProfessores").innerText = professores.length;
-    document.getElementById("totalTurmas").innerText = turmas.length;
-    document.getElementById("totalSalas").innerText = salas.length;
-    document.getElementById("totalLaboratorios").innerText = laboratorios.length;
-    document.getElementById("conflitosCount").innerText = conflitos.length;
+// ==================== CARREGAR LABORATÓRIOS ====================
+async function carregarLaboratorios() {
+    try {
+        const data = await apiRequest('/secretaria/laboratorios');
+        laboratorios = data.laboratorios || [];
+        renderizarLaboratorios();
+    } catch (error) {
+        console.error('Erro ao carregar laboratórios:', error);
+        laboratorios = [];
+        renderizarLaboratorios();
+    }
 }
 
+// ==================== CARREGAR SALAS ====================
+async function carregarSalas() {
+    try {
+        const data = await apiRequest('/secretaria/salas');
+        salas = data.salas || [];
+        renderizarSalas();
+    } catch (error) {
+        console.error('Erro ao carregar salas:', error);
+        salas = [];
+        renderizarSalas();
+    }
+}
+
+// ==================== CARREGAR ALOCAÇÕES ====================
+async function carregarAlocacoes() {
+    try {
+        const data = await apiRequest('/alocacao');
+        alocacoes = data.alocacoes || [];
+    } catch (error) {
+        console.error('Erro ao carregar alocações:', error);
+        alocacoes = [];
+    }
+}
+
+// ==================== CARREGAR CONFLITOS ====================
+async function carregarConflitos() {
+    try {
+        const data = await apiRequest('/alocacao/conflitos');
+        conflitos = data.conflitos || [];
+        renderizarConflitos();
+    } catch (error) {
+        console.error('Erro ao carregar conflitos:', error);
+        conflitos = [];
+        renderizarConflitos();
+    }
+}
+
+// ==================== RENDERIZAÇÃO ====================
 function renderizarProfessores() {
     const tbody = document.querySelector("#tabelaProfessores tbody");
     if (!tbody) return;
-    if (professores.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4">Nenhum professor cadastrado</td></tr>';
+    
+    if (!professores || professores.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center">Nenhum professor cadastrado</td></tr>';
         return;
     }
+    
     let html = '';
     for (let p of professores) {
         html += `<tr>
-            <td><strong>${p.nome}</strong></td>
-            <td>${p.email}</td>
-            <td>${p.disciplinas ? p.disciplinas.join(", ") : "Nenhuma"}</td>
+            <td><strong>${p.nome || '?'}</strong></td>
+            <td>${p.email || '?'}</td>
+            <td>${p.disciplinas || 'Nenhuma'}</td>
             <td><button class="btn-danger" onclick="removerProfessor(${p.id})">Remover</button></td>
         </tr>`;
     }
@@ -87,35 +141,19 @@ function renderizarProfessores() {
 function renderizarTurmas() {
     const tbody = document.querySelector("#tabelaTurmas tbody");
     if (!tbody) return;
-    if (turmas.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4">Nenhuma turma cadastrada</td></tr>';
+    
+    if (!turmas || turmas.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center">Nenhuma turma cadastrada</td></tr>';
         return;
     }
+    
     let html = '';
     for (let t of turmas) {
         html += `<tr>
-            <td><strong>${t.nome}</strong></td>
-            <td>${t.curso}</td>
-            <td>${t.alunos}</td>
+            <td><strong>${t.nome || '?'}</strong></td>
+            <td>${t.curso || '?'}</td>
+            <td>${t.num_alunos || '?'}</td>
             <td><button class="btn-danger" onclick="removerTurma(${t.id})">Remover</button></td>
-        </tr>`;
-    }
-    tbody.innerHTML = html;
-}
-
-function renderizarSalas() {
-    const tbody = document.querySelector("#tabelaSalas tbody");
-    if (!tbody) return;
-    if (salas.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3">Nenhuma sala cadastrada</td></tr>';
-        return;
-    }
-    let html = '';
-    for (let s of salas) {
-        html += `<tr>
-            <td><strong>${s.nome}</strong></td>
-            <td>${s.capacidade}</td>
-            <td><button class="btn-danger" onclick="removerSala(${s.id})">Remover</button></td>
         </tr>`;
     }
     tbody.innerHTML = html;
@@ -124,16 +162,38 @@ function renderizarSalas() {
 function renderizarLaboratorios() {
     const tbody = document.querySelector("#tabelaLaboratorios tbody");
     if (!tbody) return;
-    if (laboratorios.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3">Nenhum laboratório cadastrado</td></tr>';
+    
+    if (!laboratorios || laboratorios.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Nenhum laboratório cadastrado</td></tr>';
         return;
     }
+    
     let html = '';
     for (let l of laboratorios) {
         html += `<tr>
-            <td><strong>${l.nome}</strong></td>
-            <td>${l.capacidade}</td>
+            <td><strong>${l.nome || '?'}</strong></td>
+            <td>${l.capacidade || '?'}</td>
             <td><button class="btn-danger" onclick="removerLab(${l.id})">Remover</button></td>
+        </tr>`;
+    }
+    tbody.innerHTML = html;
+}
+
+function renderizarSalas() {
+    const tbody = document.querySelector("#tabelaSalas tbody");
+    if (!tbody) return;
+    
+    if (!salas || salas.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Nenhuma sala cadastrada</td></tr>';
+        return;
+    }
+    
+    let html = '';
+    for (let s of salas) {
+        html += `<tr>
+            <td><strong>${s.nome || '?'}</strong></td>
+            <td>${s.capacidade || '?'}</td>
+            <td><button class="btn-danger" onclick="removerSala(${s.id})">Remover</button></td>
         </tr>`;
     }
     tbody.innerHTML = html;
@@ -142,152 +202,271 @@ function renderizarLaboratorios() {
 function renderizarConflitos() {
     const container = document.getElementById("conflitosList");
     if (!container) return;
-    if (conflitos.length === 0) {
+    
+    if (!conflitos || conflitos.length === 0) {
         container.innerHTML = '<div style="text-align:center;padding:2rem;">Nenhum conflito encontrado.</div>';
         return;
     }
+    
     let html = '';
     for (let c of conflitos) {
         html += `<div class="conflito-card">
-            <strong>❌ ${c.disciplina}</strong> - Turma: ${c.turma} (${c.numAlunos} alunos)<br>
-            <small>Professor: ${c.professor} | ${c.dia}</small><br>
-            <span style="color:#dc2626;">Motivo: ${c.motivo}</span>
+            <strong>❌ ${c.disciplina || '?'}</strong> - Turma: ${c.turma_nome || '?'}<br>
+            <small>Professor: ${c.professor_nome || '?'} | ${c.dia || '?'}</small><br>
+            <span style="color:#dc2626;">Motivo: ${c.motivo || '?'}</span>
         </div>`;
     }
     container.innerHTML = html;
 }
 
-function renderizarConfigProfessores() {
-    const tbody = document.querySelector("#tabelaConfig tbody");
-    if (!tbody) return;
-    if (configDisciplinas.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5">Nenhuma configuração enviada pelos professores</td></tr>';
-        return;
-    }
-    let html = '';
-    for (let c of configDisciplinas) {
-        html += `<tr>
-            <td>${c.professorNome}</td>
-            <td>${c.disciplina}</td>
-            <td>${c.totalAulas}</td>
-            <td>${c.percLab}%</td>
-            <td>${c.percConf}%</td>
-        </tr>`;
-    }
-    tbody.innerHTML = html;
+function renderizarEstatisticas() {
+    const profElem = document.getElementById("totalProfessores");
+    const turmasElem = document.getElementById("totalTurmas");
+    const salasElem = document.getElementById("totalSalas");
+    const labsElem = document.getElementById("totalLaboratorios");
+    const conflitosElem = document.getElementById("conflitosCount");
+    
+    if (profElem) profElem.innerText = professores ? professores.length : 0;
+    if (turmasElem) turmasElem.innerText = turmas ? turmas.length : 0;
+    if (salasElem) salasElem.innerText = salas ? salas.length : 0;
+    if (labsElem) labsElem.innerText = laboratorios ? laboratorios.length : 0;
+    if (conflitosElem) conflitosElem.innerText = conflitos ? conflitos.length : 0;
 }
 
-function renderizarReclamacoes() {
-    const container = document.getElementById("listaReclamacoes");
-    if (!container) return;
-    if (reclamacoes.length === 0) {
-        container.innerHTML = '<div style="text-align:center;padding:2rem;">Nenhuma reclamação</div>';
-        return;
+// ==================== CRUD (USANDO API) ====================
+async function removerProfessor(id) {
+    if (!confirm('Remover este professor?')) return;
+    try {
+        await apiRequest(`/secretaria/professores/${id}`, { method: 'DELETE' });
+        await carregarProfessores();
+        renderizarEstatisticas();
+        mostrarToast('Professor removido com sucesso', 'success');
+    } catch (error) {
+        mostrarToast('Erro ao remover professor', 'error');
     }
-    let html = '';
-    for (let r of reclamacoes) {
-        html += `<div class="conflito-card"><strong>${r.professorNome}</strong> (${r.data})<br>${r.mensagem}</div>`;
-    }
-    container.innerHTML = html;
 }
 
-// ==================== CRUD ====================
-function removerProfessor(id) { professores = professores.filter(p => p.id !== id); salvarDados(); renderizarTudo(); }
-function removerTurma(id) { turmas = turmas.filter(t => t.id !== id); salvarDados(); renderizarTudo(); }
-function removerSala(id) { salas = salas.filter(s => s.id !== id); salvarDados(); renderizarTudo(); }
-function removerLab(id) { laboratorios = laboratorios.filter(l => l.id !== id); salvarDados(); renderizarTudo(); }
+async function removerTurma(id) {
+    if (!confirm('Remover esta turma?')) return;
+    try {
+        await apiRequest(`/secretaria/turmas/${id}`, { method: 'DELETE' });
+        await carregarTurmas();
+        renderizarEstatisticas();
+        mostrarToast('Turma removida com sucesso', 'success');
+    } catch (error) {
+        mostrarToast('Erro ao remover turma', 'error');
+    }
+}
+
+async function removerLab(id) {
+    if (!confirm('Remover este laboratório?')) return;
+    try {
+        await apiRequest(`/secretaria/laboratorios/${id}`, { method: 'DELETE' });
+        await carregarLaboratorios();
+        renderizarEstatisticas();
+        mostrarToast('Laboratório removido com sucesso', 'success');
+    } catch (error) {
+        mostrarToast('Erro ao remover laboratório', 'error');
+    }
+}
+
+async function removerSala(id) {
+    if (!confirm('Remover esta sala?')) return;
+    try {
+        await apiRequest(`/secretaria/salas/${id}`, { method: 'DELETE' });
+        await carregarSalas();
+        renderizarEstatisticas();
+        mostrarToast('Sala removida com sucesso', 'success');
+    } catch (error) {
+        mostrarToast('Erro ao remover sala', 'error');
+    }
+}
 
 // ==================== CADASTROS ====================
-document.getElementById("formProfessor").addEventListener("submit", (e) => {
+document.getElementById("formProfessor").addEventListener("submit", async (e) => {
     e.preventDefault();
-    let nome = document.getElementById("profNome").value.trim();
-    let email = document.getElementById("profEmail").value.trim();
-    let senha = document.getElementById("profSenha").value;
-    let disciplinasTexto = document.getElementById("profDisciplinas").value.trim();
-    let disciplinas = disciplinasTexto ? disciplinasTexto.split(",").map(d => d.trim()) : [];
+    const nome = document.getElementById("profNome").value.trim();
+    const email = document.getElementById("profEmail").value.trim();
+    const senha = document.getElementById("profSenha").value;
+    const disciplinas = document.getElementById("profDisciplinas").value.trim();
     
-    if (nome && email) {
-        professores.push({
-            id: nextId.professor++,
-            nome, email, senha, disciplinas
+    if (!nome || !email || !senha) {
+        mostrarToast('Preencha todos os campos', 'error');
+        return;
+    }
+    
+    try {
+        await apiRequest('/secretaria/professores', {
+            method: 'POST',
+            body: JSON.stringify({ nome, email, senha, disciplinas })
         });
-        salvarDados();
-        renderizarTudo();
-        fecharModal("modalProfessor");
+        mostrarToast('Professor cadastrado com sucesso', 'success');
+        fecharModal('modalProfessor');
         document.getElementById("formProfessor").reset();
+        await carregarProfessores();
+        renderizarEstatisticas();
+    } catch (error) {
+        mostrarToast('Erro ao cadastrar professor', 'error');
     }
 });
 
-document.getElementById("formTurma").addEventListener("submit", (e) => {
+document.getElementById("formTurma").addEventListener("submit", async (e) => {
     e.preventDefault();
-    turmas.push({
-        id: nextId.turma++,
-        nome: document.getElementById("turmaNome").value.trim(),
-        curso: document.getElementById("turmaCurso").value.trim(),
-        alunos: parseInt(document.getElementById("turmaAlunos").value)
-    });
-    salvarDados();
-    renderizarTudo();
-    fecharModal("modalTurma");
-    document.getElementById("formTurma").reset();
+    const nome = document.getElementById("turmaNome").value.trim();
+    const curso = document.getElementById("turmaCurso").value.trim();
+    const numAlunos = parseInt(document.getElementById("turmaAlunos").value);
+    
+    if (!nome || !curso || !numAlunos) {
+        mostrarToast('Preencha todos os campos', 'error');
+        return;
+    }
+    
+    try {
+        await apiRequest('/secretaria/turmas', {
+            method: 'POST',
+            body: JSON.stringify({ nome, curso, numAlunos })
+        });
+        mostrarToast('Turma cadastrada com sucesso', 'success');
+        fecharModal('modalTurma');
+        document.getElementById("formTurma").reset();
+        await carregarTurmas();
+        renderizarEstatisticas();
+    } catch (error) {
+        mostrarToast('Erro ao cadastrar turma', 'error');
+    }
 });
 
-document.getElementById("formSala").addEventListener("submit", (e) => {
+document.getElementById("formLab").addEventListener("submit", async (e) => {
     e.preventDefault();
-    salas.push({
-        id: nextId.sala++,
-        nome: document.getElementById("salaNome").value.trim(),
-        capacidade: parseInt(document.getElementById("salaCapacidade").value)
-    });
-    salvarDados();
-    renderizarTudo();
-    fecharModal("modalSala");
-    document.getElementById("formSala").reset();
+    const nome = document.getElementById("labNome").value.trim();
+    const capacidade = parseInt(document.getElementById("labCap").value);
+    
+    if (!nome || !capacidade) {
+        mostrarToast('Preencha todos os campos', 'error');
+        return;
+    }
+    
+    try {
+        await apiRequest('/secretaria/laboratorios', {
+            method: 'POST',
+            body: JSON.stringify({ nome, capacidade })
+        });
+        mostrarToast('Laboratório cadastrado com sucesso', 'success');
+        fecharModal('modalLab');
+        document.getElementById("formLab").reset();
+        await carregarLaboratorios();
+        renderizarEstatisticas();
+    } catch (error) {
+        mostrarToast('Erro ao cadastrar laboratório', 'error');
+    }
 });
 
-document.getElementById("formLab").addEventListener("submit", (e) => {
+document.getElementById("formSala").addEventListener("submit", async (e) => {
     e.preventDefault();
-    laboratorios.push({
-        id: nextId.lab++,
-        nome: document.getElementById("labNome").value.trim(),
-        capacidade: parseInt(document.getElementById("labCap").value)
-    });
-    salvarDados();
-    renderizarTudo();
-    fecharModal("modalLab");
-    document.getElementById("formLab").reset();
+    const nome = document.getElementById("salaNome").value.trim();
+    const capacidade = parseInt(document.getElementById("salaCapacidade").value);
+    
+    if (!nome || !capacidade) {
+        mostrarToast('Preencha todos os campos', 'error');
+        return;
+    }
+    
+    try {
+        await apiRequest('/secretaria/salas', {
+            method: 'POST',
+            body: JSON.stringify({ nome, capacidade })
+        });
+        mostrarToast('Sala cadastrada com sucesso', 'success');
+        fecharModal('modalSala');
+        document.getElementById("formSala").reset();
+        await carregarSalas();
+        renderizarEstatisticas();
+    } catch (error) {
+        mostrarToast('Erro ao cadastrar sala', 'error');
+    }
 });
 
-// ==================== EVENTOS ====================
-document.getElementById("btnGerar").onclick = () => { alert("Algoritmo de alocação será implementado em breve!"); };
-document.getElementById("btnPublicar").onclick = () => {
-    if (conflitos.length > 0) alert(`Ainda existem ${conflitos.length} conflitos. Resolva antes de publicar.`);
-    else alert("Planeamento publicado com sucesso!");
+// ==================== ALOCAÇÃO ====================
+document.getElementById("btnGerar").onclick = async () => {
+    try {
+        await apiRequest('/alocacao/executar', { method: 'POST' });
+        mostrarToast('Horário gerado com sucesso!', 'success');
+        await Promise.all([carregarAlocacoes(), carregarConflitos()]);
+        renderizarEstatisticas();
+    } catch (error) {
+        mostrarToast('Erro ao gerar horário', 'error');
+    }
 };
+
+document.getElementById("btnPublicar").onclick = () => {
+    if (conflitos && conflitos.length > 0) {
+        mostrarToast(`Ainda existem ${conflitos.length} conflitos para resolver`, 'error');
+    } else {
+        mostrarToast('Planeamento publicado com sucesso!', 'success');
+    }
+};
+
+// ==================== LOGOUT ====================
 document.getElementById("logoutBtn").onclick = () => {
     localStorage.removeItem('labUser');
+    localStorage.removeItem('token');
+    sessionStorage.removeItem('labUser');
+    sessionStorage.removeItem('token');
     window.location.href = 'index.html';
 };
 
-function abrirModal(id) { document.getElementById(id).style.display = "flex"; }
-function fecharModal(id) { document.getElementById(id).style.display = "none"; }
+// ==================== UTILITÁRIOS ====================
+function mostrarToast(msg, tipo) {
+    const toast = document.createElement('div');
+    toast.textContent = msg;
+    toast.style.position = 'fixed';
+    toast.style.bottom = '20px';
+    toast.style.right = '20px';
+    toast.style.background = tipo === 'success' ? '#10b981' : '#dc2626';
+    toast.style.color = 'white';
+    toast.style.padding = '12px 24px';
+    toast.style.borderRadius = '2rem';
+    toast.style.zIndex = '2000';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
 
-// Tabs
+function abrirModal(id) { 
+    document.getElementById(id).style.display = "flex"; 
+}
+
+function fecharModal(id) { 
+    document.getElementById(id).style.display = "none"; 
+}
+
+// ==================== TABS ====================
 document.querySelectorAll(".tab").forEach(tab => {
     tab.onclick = () => {
         document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
         document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
         tab.classList.add("active");
         document.getElementById(tab.dataset.tab).classList.add("active");
+        
+        // Recarregar dados quando mudar de tab
+        if (tab.dataset.tab === "tab-professores") carregarProfessores();
+        if (tab.dataset.tab === "tab-turmas") carregarTurmas();
+        if (tab.dataset.tab === "tab-laboratorios") carregarLaboratorios();
+        if (tab.dataset.tab === "tab-salas") carregarSalas();
+        if (tab.dataset.tab === "tab-conflitos") carregarConflitos();
     };
 });
 
-window.onclick = (e) => { if (e.target.classList.contains('modal')) e.target.style.display = "none"; };
+window.onclick = (e) => { 
+    if (e.target.classList.contains('modal')) e.target.style.display = "none"; 
+};
+
+// Expor funções globalmente
 window.removerProfessor = removerProfessor;
 window.removerTurma = removerTurma;
-window.removerSala = removerSala;
 window.removerLab = removerLab;
+window.removerSala = removerSala;
 window.abrirModal = abrirModal;
 window.fecharModal = fecharModal;
 
+// ==================== INICIAR ====================
 carregarDados();

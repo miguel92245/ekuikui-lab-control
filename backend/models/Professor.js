@@ -36,7 +36,7 @@ class Professor {
         return rows[0];
     }
 
-    // Criar professor (versão simplificada, sem transação)
+    // Criar professor (insere na tabela users e na tabela professores)
     static async create(nome, email, senhaHash, disciplinas) {
         // Inserir na tabela users
         const [userResult] = await db.execute(
@@ -44,6 +44,12 @@ class Professor {
             [nome, email, senhaHash, 'professor']
         );
         const professorId = userResult.insertId;
+
+        // 🔧 CORREÇÃO: Inserir também na tabela professores
+        await db.execute(
+            'INSERT INTO professores (user_id, carga_horaria) VALUES (?, ?)',
+            [professorId, 4]  // carga_horaria padrão = 4
+        );
 
         // Inserir disciplinas
         if (disciplinas && disciplinas.length > 0) {
