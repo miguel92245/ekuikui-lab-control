@@ -5,91 +5,87 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Professor | EKuikui Lab Control</title>
-
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap"
-        rel="stylesheet">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/professor.css">
 </head>
 
 <body>
-    <div class="dashboard-container">
-        <div class="header">
-            <div class="logo">
-                <h2><i class="fas fa-chalkboard-user"></i> EKuikui Lab Control</h2>
-            </div>
-            <div class="user-info">
-                <i class="fas fa-user"></i> <span id="profNome"></span>
-                <button id="logoutBtn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Sair</button>
-            </div>
+<div class="dashboard-container">
+    <div class="header">
+        <div class="logo"><h2><i class="fas fa-chalkboard-user"></i> EKuikui Lab Control</h2></div>
+        <div class="user-info">
+            <i class="fas fa-user"></i> <span id="profNome"></span>
+            <button id="logoutBtn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Sair</button>
         </div>
+    </div>
+    <!-- Botões principais -->
+    <div class="actions">
+        <button class="btn btn-primary" id="btnUnidadeCurricular"><i class="fas fa-book"></i> Unidade Curricular</button>
+        <button class="btn btn-primary" id="btnDiasAulas"><i class="fas fa-calendar-day"></i> Dias de Aulas</button>
+    </div>
 
-        <!-- Botões principais -->
-        <div class="actions">
-            <button class="btn btn-primary" id="btnUnidadeCurricular"><i class="fas fa-book"></i> Unidade
-                Curricular</button><button class="btn btn-primary" id="btnDiasAulas"><i class="fas fa-calendar-day"></i>
-                Dias de Aulas</button>
-        </div>
-
-        <!-- Horário Semestral -->
-        <div class="glass-card">
-            <h3 class="card-title"><i class="fas fa-calendar-alt"></i> Horário Semestral</h3>
-            <div class="table-wrapper">
-                <table class="data-table" id="tabelaHorario">
-                    <thead>
-                        <tr>
-                            <th>Dia</th>
-                            <th>Disciplina</th>
-                            <th>Turma</th>
-                            <th>Horário</th>
-                            <th>Laboratório</th>
-                        </tr>
-                    </thead>
-                    <tbody id="horarioBody"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Reclamação -->
-        <div class="glass-card">
-            <h3 class="card-title"><i class="fas fa-exclamation-triangle"></i> Reclamação</h3>
-            <textarea id="reclamacaoMsg" rows="3" class="textarea-field"
-                placeholder="Escreva sua reclamação..."></textarea>
-            <button id="reclamarBtn" class="btn btn-warning"><i class="fas fa-paper-plane"></i> Enviar
-                Reclamação</button>
+    <!-- Horário Semestral -->
+    <div class="glass-card">
+        <h3 class="card-title"><i class="fas fa-calendar-alt"></i> Horário Semestral</h3>
+        <div class="table-wrapper">
+            <table class="data-table" id="tabelaHorario">
+                <thead><tr><th>Dia</th><th>Disciplina</th><th>Turma</th><th>Horário</th><th>Laboratório</th></tr></thead>
+                <tbody id="horarioBody"></tbody>
+            </table>
         </div>
     </div>
 
-    <!-- Modal Unidade Curricular -->
-    <div id="modalUnidade" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-book"></i> Unidades Curriculares</h3>
-                <span class="close-modal" onclick="fecharModal('modalUnidade')">&times;</span>
-            </div>
-            <div id="listaDisciplinasModal" class="disciplinas-list-modal"></div>
+    <!-- Reclamação -->
+    <div class="glass-card">
+        <h3 class="card-title"><i class="fas fa-exclamation-triangle"></i> Reclamação</h3>
+        <textarea id="reclamacaoMsg" rows="3" class="textarea-field" placeholder="Escreva sua reclamação..."></textarea>
+        <button id="reclamarBtn" class="btn btn-warning"><i class="fas fa-paper-plane"></i> Enviar Reclamação</button>
+    </div>
+</div>
+
+<!-- Modal Unidade Curricular (listar disciplinas) -->
+<div id="modalUnidade" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-book"></i> Unidades Curriculares</h3>
+            <span class="close-modal" onclick="fecharModal('modalUnidade')">&times;</span>
+        </div>
+        <div id="listaDisciplinasModal" class="disciplinas-list-modal"></div>
+    </div>
+</div>
+
+<!-- Modal Configurar Disciplina (detalhes) -->
+<div id="modalConfigDisciplina" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalConfigTitulo">Configurar Disciplina</h3>
+            <span class="close-modal" onclick="fecharModal('modalConfigDisciplina')">&times;</span>
+        </div>
+        <div class="form-group"><label>Nº Total de Aulas no Semestre</label><input type="number" id="totalAulas" class="input-field" placeholder="Ex: 14"></div>
+        <div class="form-group"><label>Percentagem para Laboratório (Máx 80%)</label><input type="number" id="percLab" class="input-field" placeholder="Ex: 60"></div>
+        <div class="form-group"><label>Percentagem para Conferência</label><input type="number" id="percConf" class="input-field" placeholder="Ex: 40" readonly></div>
+        <div class="modal-buttons">
+            <button id="salvarConfigBtn" class="btn btn-primary">Salvar</button>
+            <button onclick="fecharModal('modalConfigDisciplina')" class="btn btn-danger">Cancelar</button>
         </div>
     </div>
-
-    <!-- Modal Configurar Disciplina -->
-    <div id="modalConfigDisciplina" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="modalConfigTitulo">Configurar Disciplina</h3>
-                <span class="close-modal" onclick="fecharModal('modalConfigDisciplina')">&times;</span>
-            </div>
-            <div class="form-group"><label>Nº Total de Aulas no Semestre</label><input type="number" id="totalAulas"
-                    class="input-field" placeholder="Ex: 14"></div>
-            <div class="form-group"><label>Percentagem para Laboratório (Máx 80%)</label><input type="number"
-                    id="percLab" class="input-field" placeholder="Ex: 60"></div>
-            <div class="form-group"><label>Percentagem para Conferência</label><input type="number" id="percConf"
-                    class="input-field" placeholder="Ex: 40" readonly></div>
-            <div class="modal-buttons">
-                <button id="salvarConfigBtn" class="btn btn-primary">Salvar</button>
-                <button onclick="fecharModal('modalConfigDisciplina')" class="btn btn-danger">Cancelar</button>
-            </div>
+</div> 
+<!-- Modal Dias de Aulas -->
+<div id="modalDias" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-calendar-day"></i> Dias de Aulas</h3>
+            <span class="close-modal" onclick="fecharModal('modalDias')">&times;</span>
+        </div>
+        <div class="form-group"><label>Data (Dia, Mês, Ano)</label><input type="date" id="dataAula" class="input-field"></div>
+        <div class="form-group"><label>Hora Início</label><input type="time" id="horaInicio" class="input-field"></div>
+        <div class="form-group"><label>Hora Fim</label><input type="time" id="horaFim" class="input-field"></div>
+        <div class="modal-buttons">
+            <button id="salvarDiasBtn" class="btn btn-primary">Salvar</button>
+            <button onclick="fecharModal('modalDias')" class="btn btn-danger">Cancelar</button>
         </div>
     </div>
 
@@ -115,5 +111,5 @@
     <script src="js/api.js"></script>
     <script src="js/professor.js"></script>
 </body>
-
 </html>
+
