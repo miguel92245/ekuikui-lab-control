@@ -35,7 +35,16 @@ const create = async (req, res) => {
         if (!nome || !email || !senha) {
             return res.status(400).json({ message: 'Nome, email e senha são obrigatórios' });
         }
-        
+        // Validar domínio do email
+const dominiosPermitidos = ['.ao', '.com', '.edu.ao'];
+const dominioValido = dominiosPermitidos.some(dominio =>
+    email.toLowerCase().endsWith(dominio)
+);
+if (!dominioValido) {
+    return res.status(400).json({
+        message: 'O email deve terminar com .ao, .com ou .edu.ao'
+    });
+}
         const senhaHash = await bcrypt.hash(senha, 10);
         const disciplinasArray = disciplinas ? disciplinas.split(',').map(d => d.trim()) : [];
         
