@@ -246,6 +246,35 @@ async function removerProfessor(id) {
     }
 }
 
+async function carregarReclamacoes() { // Função assíncrona pra buscar reclamações
+    const div = document.getElementById('aba-reclamacoes'); // Pega div da aba reclamações
+
+    try { // Tenta buscar da API
+        const res = await fetch('/api/reclamacoes'); // Faz GET na rota da API
+        const reclamacoes = await res.json(); // Converte resposta pra array JS
+
+        if(reclamacoes.length === 0) { // Verifica se array está vazio
+            div.innerHTML = '<p>Nenhuma reclamação registrada</p>'; // Mostra mensagem vazia
+            return; // Para função aqui
+        }
+
+        let html = '<h3>Reclamações dos Professores</h3>'; // Inicia HTML com título
+        reclamacoes.forEach(r => { // Percorre cada reclamação
+            html += `<div style="border:1px solid #ccc; margin:10px; padding:10px">`; // Abre card com borda
+            html += `<b>Prof: ${r.prof_nome}</b><br>`; // Mostra nome do professor
+            html += `<b>Assunto:</b> ${r.assunto}<br>`; // Mostra assunto
+            html += `<b>Mensagem:</b> ${r.mensagem}<br>`; // Mostra mensagem que ele escreveu
+            html += `<small>Enviado em: ${new Date(r.criado_em).toLocaleString()}</small>`; // Mostra data formatada
+            html += `</div>`; // Fecha card
+        });
+        div.innerHTML = html; // Joga HTML dentro da div da secretaria
+    } catch(erro) { // Se der erro
+        div.innerHTML = '<p style="color:red">Erro ao carregar</p>'; // Mostra erro vermelho
+    }
+} // Fecha função
+
+
+
 async function removerTurma(id) {
     if (!confirm('Remover esta turma?')) return;
     try {
