@@ -294,7 +294,18 @@ document.getElementById("formProfessor").addEventListener("submit", async (e) =>
         mostrarToast('Preencha todos os campos', 'error');
         return;
     }
-    
+    // Validar domínio do email
+const dominiosPermitidos = ['.ao', '.com', '.edu.ao'];
+
+const dominioValido = dominiosPermitidos.some(dominio =>
+    email.toLowerCase().endsWith(dominio)
+);
+
+if (!dominioValido) {
+    return res.status(400).json({
+        message: 'O email deve terminar com .ao, .com ou .edu.ao'
+    });
+}
     try {
         await apiRequest('/secretaria/professores', {
             method: 'POST',
