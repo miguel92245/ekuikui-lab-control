@@ -1,354 +1,512 @@
-// Dados globais
+// secretaria.js - usando API (CORRIGIDO)
+
 let professores = [];
 let turmas = [];
 let laboratorios = [];
-let aulasImportadas = [];
+let salas = [];
 let alocacoes = [];
 let conflitos = [];
-let nextId = { professor: 1, turma: 1, lab: 1 };
 
-const dias = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"];
-const horarios = ["08:00", "09:30", "11:00", "13:30", "15:00", "16:30"];
-
-// ==================== FUNÇÕES PRINCIPAIS ====================
-function carregarDados() {
-    const data = localStorage.getItem("ekuikuiLabData");
-    if (data) {
-        const obj = JSON.parse(data);
-        professores = obj.professores || [];
-        turmas = obj.turmas || [];
-        laboratorios = obj.laboratorios || [];
-        aulasImportadas = obj.aulasImportadas || [];
-        alocacoes = obj.alocacoes || [];
-        conflitos = obj.conflitos || [];
-        nextId = obj.nextId || { professor: professores.length+1, turma: turmas.length+1, lab: laboratorios.length+1 };
+// ==================== CARREGAR DADOS INICIAIS ====================
+async function carregarDados() {
+    try {
+        // Verificar login
+        const userStr = localStorage.getItem('labUser') || sessionStorage.getItem('labUser');
+        if (!userStr) {
+            window.location.href = 'index.html';
+            return;
+        }
+        
+        const user = JSON.parse(userStr);
+        if (user.tipo !== 'secretaria') {
+            window.location.href = 'index.html';
+            return;
+        }
+        
+        // Carregar todos os dados
+        await Promise.all([
+            carregarProfessores(),
+            carregarTurmas(),
+            carregarLaboratorios(),
+            carregarSalas(),
+            carregarAlocacoes(),
+            carregarConflitos()
+        ]);
+        
+        renderizarEstatisticas();
+        
+    } catch (error) {
+        console.error('Erro ao carregar dados:', error);
     }
-    renderizarTudo();
 }
 
-function salvarDados() {
-    localStorage.setItem("ekuikuiLabData", JSON.stringify({ 
-        professores, turmas, laboratorios, aulasImportadas, alocacoes, conflitos, nextId 
-    }));
+// ==================== CARREGAR PROFESSORES ====================
+async function carregarProfessores() {
+    try {
+        const data = await apiRequest('/secretaria/professores');
+        professores = data.professores || [];
+        renderizarProfessores();
+    } catch (error) {
+        console.error('Erro ao carregar professores:', error);
+        professores = [];
+        renderizarProfessores();
+    }
+}
+
+// ==================== CARREGAR TURMAS ====================
+async function carregarTurmas() {
+    try {
+        const data = await apiRequest('/secretaria/turmas');
+        turmas = data.turmas || [];
+        renderizarTurmas();
+    } catch (error) {
+        console.error('Erro ao carregar turmas:', error);
+        turmas = [];
+        renderizarTurmas();
+    }
+}
+
+// ==================== CARREGAR LABORATÓRIOS ====================
+async function carregarLaboratorios() {
+    try {
+        const data = await apiRequest('/secretaria/laboratorios');
+        laboratorios = data.laboratorios || [];
+        renderizarLaboratorios();
+    } catch (error) {
+        console.error('Erro ao carregar laboratórios:', error);
+        laboratorios = [];
+        renderizarLaboratorios();
+    }
+}
+
+// ==================== CARREGAR SALAS ====================
+async function carregarSalas() {
+    try {
+        const data = await apiRequest('/secretaria/salas');
+        salas = data.salas || [];
+        renderizarSalas();
+    } catch (error) {
+        console.error('Erro ao carregar salas:', error);
+        salas = [];
+        renderizarSalas();
+    }
+}
+
+// ==================== CARREGAR ALOCAÇÕES ====================
+async function carregarAlocacoes() {
+    try {
+        const data = await apiRequest('/alocacao');
+        alocacoes = data.alocacoes || [];
+    } catch (error) {
+        console.error('Erro ao carregar alocações:', error);
+        alocacoes = [];
+    }
+}
+
+// ==================== CARREGAR CONFLITOS ====================
+async function carregarConflitos() {
+    try {
+        const data = await apiRequest('/alocacao/conflitos');
+        conflitos = data.conflitos || [];
+        renderizarConflitos();
+    } catch (error) {
+        console.error('Erro ao carregar conflitos:', error);
+        conflitos = [];
+        renderizarConflitos();
+    }
 }
 
 // ==================== RENDERIZAÇÃO ====================
-function renderizarTudo() {
-    renderizarProfessores();
-    renderizarTurmas();
-    renderizarLaboratorios();
-    renderizarEstatisticas();
-    renderizarAulasPreview();
-    renderizarHorarios();
-    renderizarConflitos();
-}
-
-function renderizarEstatisticas() {
-    document.getElementById("stats").innerHTML = `
-        <div class="stat-card"><h3>${professores.length}</h3><p>Professores</p></div>
-        <div class="stat-card"><h3>${turmas.length}</h3><p>Turmas</p></div>
-        <div class="stat-card"><h3>${laboratorios.length}</h3><p>Laboratórios</p></div>
-        <div class="stat-card"><h3>${aulasImportadas.length}</h3><p>Aulas Práticas</p></div>
-        <div class="stat-card"><h3>${alocacoes.length}</h3><p>Aulas Alocadas</p></div>
-    `;
-    document.getElementById("conflitosCount").innerText = conflitos.length;
-}
-
 function renderizarProfessores() {
     const tbody = document.querySelector("#tabelaProfessores tbody");
     if (!tbody) return;
-    if (professores.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Nenhum professor</td></tr>';
+    
+    if (!professores || professores.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center">Nenhum professor cadastrado</td></tr>';
         return;
     }
-    tbody.innerHTML = professores.map(p => `
-        <tr>
-            <td><strong>${p.nome}</strong></td>
-            <td>${p.email}</td>
-            <td><button class="btn-danger" style="padding:5px 12px;border-radius:20px;border:none;cursor:pointer;" onclick="removerProfessor(${p.id})">Remover</button></td>
-        </tr>
-    `).join('');
+    
+    let html = '';
+    for (let p of professores) {
+        html += `<tr>
+            <td><strong>${p.nome || '?'}</strong></td>
+            <td>${p.email || '?'}</td>
+            <td>${p.disciplinas || 'Nenhuma'}</td>
+            <td><button class="btn-danger" onclick="removerProfessor(${p.id})">Remover</button></td>
+        </tr>`;
+    }
+    tbody.innerHTML = html;
 }
 
 function renderizarTurmas() {
     const tbody = document.querySelector("#tabelaTurmas tbody");
     if (!tbody) return;
-    if (turmas.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center">Nenhuma turma</td></tr>';
+    
+    if (!turmas || turmas.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center">Nenhuma turma cadastrada</td></tr>';
         return;
     }
-    tbody.innerHTML = turmas.map(t => `
-        <tr>
-            <td><strong>${t.nome}</strong></td>
-            <td>${t.curso}</td>
-            <td>${t.alunos}</td>
-            <td><button class="btn-danger" style="padding:5px 12px;border-radius:20px;border:none;cursor:pointer;" onclick="removerTurma(${t.id})">Remover</button></td>
-        </tr>
-    `).join('');
+    
+    let html = '';
+    for (let t of turmas) {
+        html += `<tr>
+            <td><strong>${t.nome || '?'}</strong></td>
+            <td>${t.curso || '?'}</td>
+            <td>${t.num_alunos || '?'}</td>
+            <td><button class="btn-danger" onclick="removerTurma(${t.id})">Remover</button></td>
+        </tr>`;
+    }
+    tbody.innerHTML = html;
 }
 
 function renderizarLaboratorios() {
-    const tbody = document.querySelector("#tabelaLabs tbody");
+    const tbody = document.querySelector("#tabelaLaboratorios tbody");
     if (!tbody) return;
-    if (laboratorios.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Nenhum laboratório</td></tr>';
+    
+    if (!laboratorios || laboratorios.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Nenhum laboratório cadastrado</td></tr>';
         return;
     }
-    tbody.innerHTML = laboratorios.map(l => `
-        <tr>
-            <td><strong>${l.nome}</strong></td>
-            <td>${l.capacidade}</td>
-            <td><button class="btn-danger" style="padding:5px 12px;border-radius:20px;border:none;cursor:pointer;" onclick="removerLab(${l.id})">Remover</button></td>
-        </tr>
-    `).join('');
-}
-
-function renderizarAulasPreview() {
-    const container = document.getElementById("preview");
-    if (!container) return;
-    if (aulasImportadas.length === 0) {
-        container.innerHTML = '<p style="text-align:center;color:#999;">Nenhuma aula importada. Clique na área acima.</p>';
-        return;
-    }
-    let html = '<table><thead><tr><th>Professor</th><th>Disciplina</th><th>Turma</th><th>Alunos</th><th>Dia</th><th>Hora</th><th>Tipo</th></tr></thead><tbody>';
-    aulasImportadas.forEach(a => {
+    
+    let html = '';
+    for (let l of laboratorios) {
         html += `<tr>
-            <td>${a.professor}</td>
-            <td>${a.disciplina}</td>
-            <td>${a.turma}</td>
-            <td>${a.numAlunos}</td>
-            <td>${a.dia}</td>
-            <td>${a.horaInicio}-${a.horaFim}</td>
-            <td>${a.tipo}</td>
+            <td><strong>${l.nome || '?'}</strong></td>
+            <td>${l.capacidade || '?'}</td>
+            <td><button class="btn-danger" onclick="removerLab(${l.id})">Remover</button></td>
         </tr>`;
-    });
-    html += '</tbody></table>';
-    container.innerHTML = html;
+    }
+    tbody.innerHTML = html;
 }
 
-function renderizarHorarios() {
-    const container = document.getElementById("horarioDisplay");
-    if (!container) return;
-    if (alocacoes.length === 0) {
-        container.innerHTML = '<div style="text-align:center;padding:2rem;">Nenhum horário gerado. Clique em "Gerar Distribuição"</div>';
+function renderizarSalas() {
+    const tbody = document.querySelector("#tabelaSalas tbody");
+    if (!tbody) return;
+    
+    if (!salas || salas.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Nenhuma sala cadastrada</td></tr>';
         return;
     }
     
-    let html = '<table class="horario-table"><thead><tr><th>Horário</th><th>Segunda</th><th>Terça</th><th>Quarta</th><th>Quinta</th><th>Sexta</th></tr></thead><tbody>';
-    
-    for (let hora of horarios) {
-        html += `<tr><td style="background:#1a1a2e;color:#ffd700;font-weight:bold;">${hora}</td>`;
-        for (let dia of dias) {
-            const aulas = alocacoes.filter(a => a.dia === dia && a.horaInicio === hora);
-            if (aulas.length > 0) {
-                html += '<td>';
-                for (let a of aulas) {
-                    html += `<div class="aula-card">
-                        <strong>${a.disciplina}</strong><br>
-                        <small>${a.professor}</small><br>
-                        <small>🏫 ${a.labNome} (${a.labCap} lug.)</small>
-                    </div>`;
-                }
-                html += '</td>';
-            } else {
-                html += '<td style="color:#ccc;">—</td>';
-            }
-        }
-        html += '</tr>';
+    let html = '';
+    for (let s of salas) {
+        html += `<tr>
+            <td><strong>${s.nome || '?'}</strong></td>
+            <td>${s.capacidade || '?'}</td>
+            <td><button class="btn-danger" onclick="removerSala(${s.id})">Remover</button></td>
+        </tr>`;
     }
-    html += '</tbody></table>';
-    container.innerHTML = html;
+    tbody.innerHTML = html;
 }
 
 function renderizarConflitos() {
     const container = document.getElementById("conflitosList");
     if (!container) return;
-    if (conflitos.length === 0) {
+    
+    if (!conflitos || conflitos.length === 0) {
         container.innerHTML = '<div style="text-align:center;padding:2rem;">Nenhum conflito encontrado.</div>';
         return;
     }
-    container.innerHTML = conflitos.map(c => `
-        <div class="conflito-card">
-            <strong>❌ ${c.disciplina}</strong> - Turma: ${c.turma} (${c.numAlunos} alunos)<br>
-            <small>Professor: ${c.professor} | ${c.dia}</small><br>
-            <span style="color:#dc2626;">Motivo: ${c.motivo}</span>
-        </div>
-    `).join('');
+    
+    let html = '';
+    for (let c of conflitos) {
+        html += `<div class="conflito-card">
+            <strong>❌ ${c.disciplina || '?'}</strong> - Turma: ${c.turma_nome || '?'}<br>
+            <small>Professor: ${c.professor_nome || '?'} | ${c.dia || '?'}</small><br>
+            <span style="color:#dc2626;">Motivo: ${c.motivo || '?'}</span>
+        </div>`;
+    }
+    container.innerHTML = html;
 }
 
-// ==================== IMPORTAÇÃO EXCEL ====================
-function importarExcel(file) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(sheet);
-        
-        if (rows.length === 0) {
-            alert("Ficheiro vazio.");
-            return;
-        }
-        
-        aulasImportadas = [];
-        for (let row of rows) {
-            let professor = row.Professor || row.professor || "";
-            let disciplina = row.Disciplina || row.disciplina || "";
-            let turma = row.Turma || row.turma || "";
-            let numAlunos = parseInt(row.Nº_Alunos) || parseInt(row.num_alunos) || 30;
-            let dia = row.Dia || row.dia || "";
-            let horaInicio = row.Hora_Inicio || row.hora_inicio || "";
-            let horaFim = row.Hora_Fim || row.hora_fim || "12:00";
-            let tipo = row.Tipo_Aula || row.tipo_aula || "Prática";
-            
-            if (professor && disciplina && dia && horaInicio) {
-                aulasImportadas.push({
-                    professor: String(professor).trim(),
-                    disciplina: String(disciplina).trim(),
-                    turma: String(turma).trim() || "Turma",
-                    numAlunos: numAlunos,
-                    dia: String(dia).trim(),
-                    horaInicio: String(horaInicio).trim(),
-                    horaFim: String(horaFim).trim(),
-                    tipo: String(tipo).trim()
-                });
-            }
-        }
-        
-        if (aulasImportadas.length === 0) {
-            alert("Nenhuma aula válida encontrada.");
-            return;
-        }
-        
-        salvarDados();
-        renderizarAulasPreview();
+function renderizarEstatisticas() {
+    const profElem = document.getElementById("totalProfessores");
+    const turmasElem = document.getElementById("totalTurmas");
+    const salasElem = document.getElementById("totalSalas");
+    const labsElem = document.getElementById("totalLaboratorios");
+    const conflitosElem = document.getElementById("conflitosCount");
+    
+    if (profElem) profElem.innerText = professores ? professores.length : 0;
+    if (turmasElem) turmasElem.innerText = turmas ? turmas.length : 0;
+    if (salasElem) salasElem.innerText = salas ? salas.length : 0;
+    if (labsElem) labsElem.innerText = laboratorios ? laboratorios.length : 0;
+    if (conflitosElem) conflitosElem.innerText = conflitos ? conflitos.length : 0;
+}
+
+// ==================== CRUD (USANDO API) ====================
+async function removerProfessor(id) {
+    if (!confirm('Remover este professor?')) return;
+    try {
+        await apiRequest(`/secretaria/professores/${id}`, { method: 'DELETE' });
+        await carregarProfessores();
         renderizarEstatisticas();
-        alert(`${aulasImportadas.length} aulas importadas!`);
-    };
-    reader.readAsArrayBuffer(file);
+        mostrarToast('Professor removido com sucesso', 'success');
+    } catch (error) {
+        mostrarToast('Erro ao remover professor', 'error');
+    }
 }
 
-// ==================== ALGORITMO DE ALOCAÇÃO ====================
-function gerarDistribuicao() {
-    if (aulasImportadas.length === 0) {
-        alert("Importe um Excel primeiro.");
-        return;
-    }
-    
-    let aulasPraticas = aulasImportadas.filter(a => a.tipo === "Prática" || a.tipo === "pratica");
-    
-    if (aulasPraticas.length === 0) {
-        alert("Nenhuma aula prática encontrada.");
-        return;
-    }
-    
-    if (laboratorios.length === 0) {
-        alert("Cadastre laboratórios primeiro.");
-        return;
-    }
-    
-    aulasPraticas.sort((a, b) => b.numAlunos - a.numAlunos);
-    alocacoes = [];
-    conflitos = [];
-    
-    let ocupacaoProfessor = {};
-    let ocupacaoLab = {};
-    
-    for (let aula of aulasPraticas) {
-        let alocado = false;
-        
-        for (let hora of horarios) {
-            const chaveProf = `${aula.professor}_${aula.dia}_${hora}`;
-            if (ocupacaoProfessor[chaveProf]) continue;
-            
-            let labsViaveis = laboratorios.filter(l => {
-                const chaveLab = `${l.id}_${aula.dia}_${hora}`;
-                return !ocupacaoLab[chaveLab] && l.capacidade >= aula.numAlunos;
-            });
-            labsViaveis.sort((a, b) => a.capacidade - b.capacidade);
-            
-            if (labsViaveis.length > 0) {
-                const lab = labsViaveis[0];
-                alocacoes.push({
-                    professor: aula.professor,
-                    disciplina: aula.disciplina,
-                    turma: aula.turma,
-                    numAlunos: aula.numAlunos,
-                    dia: aula.dia,
-                    horaInicio: hora,
-                    horaFim: calcularHoraFim(hora),
-                    labNome: lab.nome,
-                    labCap: lab.capacidade
-                });
-                ocupacaoProfessor[chaveProf] = true;
-                ocupacaoLab[`${lab.id}_${aula.dia}_${hora}`] = true;
-                alocado = true;
-                break;
-            }
+async function carregarReclamacoes() { // Função assíncrona pra buscar reclamações
+    const div = document.getElementById('aba-reclamacoes'); // Pega div da aba reclamações
+
+    try { // Tenta buscar da API
+        const res = await fetch('/api/reclamacoes'); // Faz GET na rota da API
+        const reclamacoes = await res.json(); // Converte resposta pra array JS
+
+        if(reclamacoes.length === 0) { // Verifica se array está vazio
+            div.innerHTML = '<p>Nenhuma reclamação registrada</p>'; // Mostra mensagem vazia
+            return; // Para função aqui
         }
-        
-        if (!alocado) {
-            conflitos.push({
-                professor: aula.professor,
-                disciplina: aula.disciplina,
-                turma: aula.turma,
-                numAlunos: aula.numAlunos,
-                dia: aula.dia,
-                motivo: "Nenhum laboratório disponível com capacidade suficiente"
-            });
-        }
+
+        let html = '<h3>Reclamações dos Professores</h3>'; // Inicia HTML com título
+        reclamacoes.forEach(r => { // Percorre cada reclamação
+            html += `<div style="border:1px solid #ccc; margin:10px; padding:10px">`; // Abre card com borda
+            html += `<b>Prof: ${r.prof_nome}</b><br>`; // Mostra nome do professor
+            html += `<b>Assunto:</b> ${r.assunto}<br>`; // Mostra assunto
+            html += `<b>Mensagem:</b> ${r.mensagem}<br>`; // Mostra mensagem que ele escreveu
+            html += `<small>Enviado em: ${new Date(r.criado_em).toLocaleString()}</small>`; // Mostra data formatada
+            html += `</div>`; // Fecha card
+        });
+        div.innerHTML = html; // Joga HTML dentro da div da secretaria
+    } catch(erro) { // Se der erro
+        div.innerHTML = '<p style="color:red">Erro ao carregar</p>'; // Mostra erro vermelho
     }
+} // Fecha função
+
+
+
+async function removerTurma(id) {
+    if (!confirm('Remover esta turma?')) return;
+    try {
+        await apiRequest(`/secretaria/turmas/${id}`, { method: 'DELETE' });
+        await carregarTurmas();
+        renderizarEstatisticas();
+        mostrarToast('Turma removida com sucesso', 'success');
+    } catch (error) {
+        mostrarToast('Erro ao remover turma', 'error');
+    }
+}
+
+async function removerLab(id) {
+    if (!confirm('Remover este laboratório?')) return;
+    try {
+        await apiRequest(`/secretaria/laboratorios/${id}`, { method: 'DELETE' });
+        await carregarLaboratorios();
+        renderizarEstatisticas();
+        mostrarToast('Laboratório removido com sucesso', 'success');
+    } catch (error) {
+        mostrarToast('Erro ao remover laboratório', 'error');
+    }
+}
+
+async function removerSala(id) {
+    if (!confirm('Remover esta sala?')) return;
+    try {
+        await apiRequest(`/secretaria/salas/${id}`, { method: 'DELETE' });
+        await carregarSalas();
+        renderizarEstatisticas();
+        mostrarToast('Sala removida com sucesso', 'success');
+    } catch (error) {
+        mostrarToast('Erro ao remover sala', 'error');
+    }
+}
+
+// ==================== CADASTROS ====================
+document.getElementById("formProfessor").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const nome = document.getElementById("profNome").value.trim();
+    const email = document.getElementById("profEmail").value.trim();
+    const senha = document.getElementById("profSenha").value;
+    const disciplinas = document.getElementById("profDisciplinas").value.trim();
     
-    salvarDados();
-    renderizarHorarios();
-    renderizarConflitos();
-    renderizarEstatisticas();
-    alert(`Distribuição concluída! ${alocacoes.length} aulas alocadas, ${conflitos.length} conflitos.`);
-}
-
-function calcularHoraFim(hora) {
-    const map = { "08:00": "09:30", "09:30": "11:00", "11:00": "12:30", "13:30": "15:00", "15:00": "16:30", "16:30": "18:00" };
-    return map[hora] || "10:00";
-}
-
-function publicar() {
-    if (conflitos.length > 0) {
-        alert(`Ainda existem ${conflitos.length} conflitos. Resolva antes de publicar.`);
+    if (!nome || !email || !senha) {
+        mostrarToast('Preencha todos os campos', 'error');
         return;
     }
-    alert("Planeamento publicado com sucesso!");
+    // Validar domínio do email
+const dominiosPermitidos = ['.ao', '.com', '.edu.ao'];
+
+const dominioValido = dominiosPermitidos.some(dominio =>
+    email.toLowerCase().endsWith(dominio)
+);
+
+if (!dominioValido) {
+    return res.status(400).json({
+        message: 'O email deve terminar com .ao, .com ou .edu.ao'
+    });
+}
+    try {
+        await apiRequest('/secretaria/professores', {
+            method: 'POST',
+            body: JSON.stringify({ nome, email, senha, disciplinas })
+        });
+        mostrarToast('Professor cadastrado com sucesso', 'success');
+        fecharModal('modalProfessor');
+        document.getElementById("formProfessor").reset();
+        await carregarProfessores();
+        renderizarEstatisticas();
+    } catch (error) {
+        mostrarToast('Erro ao cadastrar professor', 'error');
+    }
+});
+
+document.getElementById("formTurma").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const nome = document.getElementById("turmaNome").value.trim();
+    const curso = document.getElementById("turmaCurso").value.trim();
+    const numAlunos = parseInt(document.getElementById("turmaAlunos").value);
+    
+    if (!nome || !curso || !numAlunos) {
+        mostrarToast('Preencha todos os campos', 'error');
+        return;
+    }
+    
+    try {
+        await apiRequest('/secretaria/turmas', {
+            method: 'POST',
+            body: JSON.stringify({ nome, curso, numAlunos })
+        });
+        mostrarToast('Turma cadastrada com sucesso', 'success');
+        fecharModal('modalTurma');
+        document.getElementById("formTurma").reset();
+        await carregarTurmas();
+        renderizarEstatisticas();
+    } catch (error) {
+        mostrarToast('Erro ao cadastrar turma', 'error');
+    }
+});
+
+document.getElementById("formLab").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const nome = document.getElementById("labNome").value.trim();
+    const capacidade = parseInt(document.getElementById("labCap").value);
+    
+    if (!nome || !capacidade) {
+        mostrarToast('Preencha todos os campos', 'error');
+        return;
+    }
+    
+    try {
+        await apiRequest('/secretaria/laboratorios', {
+            method: 'POST',
+            body: JSON.stringify({ nome, capacidade })
+        });
+        mostrarToast('Laboratório cadastrado com sucesso', 'success');
+        fecharModal('modalLab');
+        document.getElementById("formLab").reset();
+        await carregarLaboratorios();
+        renderizarEstatisticas();
+    } catch (error) {
+        mostrarToast('Erro ao cadastrar laboratório', 'error');
+    }
+});
+
+document.getElementById("formSala").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const nome = document.getElementById("salaNome").value.trim();
+    const capacidade = parseInt(document.getElementById("salaCapacidade").value);
+    
+    if (!nome || !capacidade) {
+        mostrarToast('Preencha todos os campos', 'error');
+        return;
+    }
+    
+    try {
+        await apiRequest('/secretaria/salas', {
+            method: 'POST',
+            body: JSON.stringify({ nome, capacidade })
+        });
+        mostrarToast('Sala cadastrada com sucesso', 'success');
+        fecharModal('modalSala');
+        document.getElementById("formSala").reset();
+        await carregarSalas();
+        renderizarEstatisticas();
+    } catch (error) {
+        mostrarToast('Erro ao cadastrar sala', 'error');
+    }
+});
+
+// ==================== ALOCAÇÃO ====================
+document.getElementById("btnGerar").onclick = async () => {
+    try {
+        await apiRequest('/alocacao/executar', { method: 'POST' });
+        mostrarToast('Horário gerado com sucesso!', 'success');
+        await Promise.all([carregarAlocacoes(), carregarConflitos()]);
+        renderizarEstatisticas();
+    } catch (error) {
+        mostrarToast('Erro ao gerar horário', 'error');
+    }
+};
+
+document.getElementById("btnPublicar").onclick = () => {
+    if (conflitos && conflitos.length > 0) {
+        mostrarToast(`Ainda existem ${conflitos.length} conflitos para resolver`, 'error');
+    } else {
+        mostrarToast('Planeamento publicado com sucesso!', 'success');
+    }
+};
+
+// ==================== LOGOUT ====================
+document.getElementById("logoutBtn").onclick = () => {
+    localStorage.removeItem('labUser');
+    localStorage.removeItem('token');
+    sessionStorage.removeItem('labUser');
+    sessionStorage.removeItem('token');
+    window.location.href = 'index.html';
+};
+
+// ==================== UTILITÁRIOS ====================
+function mostrarToast(msg, tipo) {
+    const toast = document.createElement('div');
+    toast.textContent = msg;
+    toast.style.position = 'fixed';
+    toast.style.bottom = '20px';
+    toast.style.right = '20px';
+    toast.style.background = tipo === 'success' ? '#10b981' : '#dc2626';
+    toast.style.color = 'white';
+    toast.style.padding = '12px 24px';
+    toast.style.borderRadius = '2rem';
+    toast.style.zIndex = '2000';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
 }
 
-// ==================== CRUD ====================
-function removerProfessor(id) { professores = professores.filter(p => p.id !== id); salvarDados(); renderizarTudo(); }
-function removerTurma(id) { turmas = turmas.filter(t => t.id !== id); salvarDados(); renderizarTudo(); }
-function removerLab(id) { laboratorios = laboratorios.filter(l => l.id !== id); salvarDados(); renderizarTudo(); }
+function abrirModal(id) { 
+    document.getElementById(id).style.display = "flex"; 
+}
 
-// ==================== EVENTOS ====================
-document.getElementById("btnImportar").onclick = () => document.getElementById("fileInput").click();
-document.getElementById("fileInput").onchange = (e) => { if (e.target.files[0]) importarExcel(e.target.files[0]); };
-document.getElementById("btnGerar").onclick = gerarDistribuicao;
-document.getElementById("btnPublicar").onclick = publicar;
-document.getElementById("logoutBtn").onclick = () => { localStorage.removeItem('labUser'); window.location.href = 'index.html'; };
+function fecharModal(id) { 
+    document.getElementById(id).style.display = "none"; 
+}
 
-function abrirModal(id) { document.getElementById(id).style.display = "flex"; }
-function fecharModal(id) { document.getElementById(id).style.display = "none"; }
-
+// ==================== TABS ====================
 document.querySelectorAll(".tab").forEach(tab => {
     tab.onclick = () => {
         document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
         document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
         tab.classList.add("active");
         document.getElementById(tab.dataset.tab).classList.add("active");
-        if (tab.dataset.tab === "tab-horarios") renderizarHorarios();
+        
+        // Recarregar dados quando mudar de tab
+        if (tab.dataset.tab === "tab-professores") carregarProfessores();
+        if (tab.dataset.tab === "tab-turmas") carregarTurmas();
+        if (tab.dataset.tab === "tab-laboratorios") carregarLaboratorios();
+        if (tab.dataset.tab === "tab-salas") carregarSalas();
+        if (tab.dataset.tab === "tab-conflitos") carregarConflitos();
     };
 });
 
-window.onclick = (e) => { if (e.target.classList.contains('modal')) e.target.style.display = "none"; };
+window.onclick = (e) => { 
+    if (e.target.classList.contains('modal')) e.target.style.display = "none"; 
+};
+
+// Expor funções globalmente
 window.removerProfessor = removerProfessor;
 window.removerTurma = removerTurma;
 window.removerLab = removerLab;
+window.removerSala = removerSala;
 window.abrirModal = abrirModal;
 window.fecharModal = fecharModal;
 
+// ==================== INICIAR ====================
 carregarDados();
