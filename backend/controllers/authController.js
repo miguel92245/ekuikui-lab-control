@@ -11,17 +11,20 @@ exports.login = async (req, res) => {
         }
 
         const user = await User.findByEmail(email);
-        console.log("Email recebido:",email);
+        console.log("USER:",user);
         console.log("Senha digitada:", senha);
         console.log("Hash da BD:", user.senha);
+
         if (!user) {
             return res.status(401).json({ message: 'Credenciais inválidas' });
-            
+
         }
 
         // COMPARAÇÃO 
         const senhaValida = await bcrypt.compare(senha, user.senha);
         
+        console.log("Resultado bcrypt:",senhaValida);
+
         if (!senhaValida) {
             return res.status(401).json({ message: 'Credenciais inválidas' });
         }
