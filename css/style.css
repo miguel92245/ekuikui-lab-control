@@ -30,6 +30,12 @@ body {
     gap: 10px;
     transition: all 0.3s;
 }
+/* COR DO L */
+.L{
+align-items: center;
+    color: red;
+
+}
 
 .btn-primary {
     background: linear-gradient(95deg, #ffd700, #ffb347);
