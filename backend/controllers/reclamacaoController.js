@@ -1,5 +1,5 @@
 // Importa conexão com banco - ERRO 2 CORRIGIDO
-const db = require('../config/database'); // Conexão MySQL
+const db = require('../config/database/ekuikui_lab_sql'); // Conexão MySQL
 
 // Controller pra professor criar reclamação usando tabela que já existe
 exports.criar = async (req, res) => { // Função que recebe POST do professor
