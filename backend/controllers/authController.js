@@ -16,7 +16,9 @@ exports.login = async (req, res) => {
         }
 
         // COMPARAÇÃO 
-        if (user.senha !== senha) {
+        const senhaValida = await bcrypt.compare(senha, user.senha);
+
+        if (!senhaValida) {
             return res.status(401).json({ message: 'Credenciais inválidas' });
         }
 
