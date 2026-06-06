@@ -11,12 +11,21 @@ exports.login = async (req, res) => {
         }
 
         const user = await User.findByEmail(email);
+        console.log("USER:",user);
+        console.log("Senha digitada:", senha);
+        console.log("Hash da BD:", user.senha);
+
         if (!user) {
             return res.status(401).json({ message: 'Credenciais inválidas' });
+
         }
 
         // COMPARAÇÃO 
-        if (user.senha !== senha) {
+        const senhaValida = await bcrypt.compare(senha, user.senha);
+        
+        console.log("Resultado bcrypt:",senhaValida);
+
+        if (!senhaValida) {
             return res.status(401).json({ message: 'Credenciais inválidas' });
         }
 
@@ -37,7 +46,10 @@ exports.login = async (req, res) => {
             }
         });
     } catch (error) {
+        console.error("ERRO DE LOGIN");
         console.error(error);
-        res.status(500).json({ message: 'Erro interno do servidor' });
+        res.status(500).json({ message: error.message });
     }
 };
+
+
