@@ -11,6 +11,7 @@ exports.login = async (req, res) => {
         }
 
         const user = await User.findByEmail(email);
+        console.log(user);
         if (!user) {
             return res.status(401).json({ message: 'Credenciais inválidas' });
         }
