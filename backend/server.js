@@ -12,6 +12,7 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'OK', message: 'Backend funcionando!' });
 });
 
+
 // Rotas de autenticação
 const authRoutes = require('./routes/authRoutes');
 app.use('/api/auth', authRoutes);

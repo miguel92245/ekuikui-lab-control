@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+      <meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab-Control - Recuperar Senha</title>
+
+<style>
+*{ 
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+body{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    background: rgba(247, 210, 3, 0.08);
+
+}
+
+.container{
+    width:400px;
+    background:#fffffd;
+    padding:30px;
+    border-radius:15px;
+    box-shadow:0 10px 25px rgba(245, 233, 128, 0.2);
+     border-top: 6px solid #ffd700;
+}
+
+.logo{
+    text-align:center;
+    margin-bottom:20px;
+    
+
+    
+}
+
+.logo h1{
+    color:#857c05;
+
+}
+
+.logo p{
+    color:#666;
+    font-size:14px;
+}
+
+.input-group{
+    margin-bottom:15px;
+}
+
+.input-group label{
+    display:block;
+    margin-bottom:5px;
+    font-weight:bold;
+}
+
+.input-group input{
+    width:100%;
+    padding:12px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    outline:none;
+     border-top: 6px solid #ebaf0a;
+     
+}
+
+.input-group input:focus{
+    border-color:#e4870d;
+}
+
+.btn{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:8px;
+    background: linear-gradient(95deg, #e7d46a, #f59105);
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+}
+
+.btn:hover{
+    background:#eaee07;
+}
+
+.link{
+    text-align:center;
+    margin-top:15px;
+}
+
+.link a{
+    text-decoration:none;
+    color:#070564;
+    border-color:#806802
+}
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+    <div class="logo">
+        <h1>Lab-Control</h1>
+        <p>Recuperação de Senha</p>
+    </div>
+
+    <form id="formRecuperacao">
+
+        <div class="input-group">
+            <label>E-mail</label>
+            <input type="email" id="email" placeholder="Digite seu e-mail" required>
+        </div>
+
+        <button type="submit" class="btn">
+            Enviar Código
+        </button>
+
+    </form>
+
+    <div class="link">
+        <a href="index.html">Voltar ao Login</a>
+    </div>
+
+</div>
+
+<script>
+document.getElementById("formRecuperacao")
+.addEventListener("submit", function(event){
+
+    event.preventDefault();
+
+    const email = document.getElementById("email").value;
+
+    alert("Código de recuperação enviado para: " + email);
+
+    window.location.href = "nova-senha.html";
+});
+</script>
+
+</body>
+</html>

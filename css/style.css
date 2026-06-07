@@ -1,5 +1,6 @@
 /* ESTILOS GLOBAIS - COMPARTILHADOS POR TODAS AS PÁGINAS */
 
+
 * {
     margin: 0;
     padding: 0;
@@ -29,6 +30,12 @@ body {
     align-items: center;
     gap: 10px;
     transition: all 0.3s;
+}
+/* COR DO L */
+.L{
+align-items: center;
+    color: red;
+
 }
 
 .btn-primary {
