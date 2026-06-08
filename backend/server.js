@@ -22,8 +22,8 @@ const professorRoutes = require('./routes/professorRoutes');
 app.use('/api/professor', professorRoutes);
 
 //Rotas da secretaria
-const secretariaRoutes = require ('./routes/secretariaRoutes');
-app.use('./api/secretadria', secretariaRoutes);
+//const secretariaRoutes = require ('./routes/secretariaRoutes');
+//app.use('./api/secretadria', secretariaRoutes);
 
 // ==================== ROTAS DA SECRETARIA ====================
 
