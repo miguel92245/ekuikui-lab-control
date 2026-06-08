@@ -62,5 +62,29 @@ const getConflitos = async (req, res) => {
         res.status(500).json({ message: 'Erro ao buscar conflitos' });
     }
 };
+const preVisualizar = async (req, res) => {
+    try {
 
-module.exports = { executarAlocacao, getAlocacoes, getConflitos };
+        const { alocacoes, conflitos } = await gerarAlocacao();
+
+        res.json({
+            success: true,
+            alocacoes,
+            conflitos
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            message: 'Erro ao gerar pré-visualização'
+        });
+    }
+};
+
+module.exports = {
+    executarAlocacao,
+    getAlocacoes,
+    getConflitos,
+    preVisualizar
+};
