@@ -7,6 +7,36 @@ let salas = [];
 let alocacoes = [];
 let conflitos = [];
 
+// ==================== CARREGAR CONFIGURAÇÕES DOS PROFESSORES ====================
+async function carregarConfiguracoes() {
+    try {
+        const data = await apiRequest('/secretaria/configuracoes');
+        const configuracoes = data.configuracoes || [];
+        
+        const tbody = document.querySelector("#tabelaConfig tbody");
+        if (!tbody) return;
+        
+        if (configuracoes.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">Nenhuma configuração enviada pelos professores</td></tr>';
+            return;
+        }
+        
+        let html = '';
+        for (let c of configuracoes) {
+            html += `<tr>
+                <td>${c.professor_nome || '?'}</td>
+                <td>${c.disciplina_nome || '?'}</td>
+                <td>${c.total_aulas || '?'}</td>
+                <td>${c.perc_lab || '?'}%</td>
+                <td>${c.perc_conf || '?'}%</td>
+            </tr>`;
+        }
+        tbody.innerHTML = html;
+    } catch (error) {
+        console.error('Erro ao carregar configurações:', error);
+    }
+}
+
 // ==================== CARREGAR DADOS INICIAIS ====================
 async function carregarDados() {
     try {
@@ -493,12 +523,9 @@ document.querySelectorAll(".tab").forEach(tab => {
         if (tab.dataset.tab === "tab-laboratorios") carregarLaboratorios();
         if (tab.dataset.tab === "tab-salas") carregarSalas();
         if (tab.dataset.tab === "tab-conflitos") carregarConflitos();
+        if (tab.dataset.tab === "tab-config-professores") carregarConfiguracoes(); // NOVA LINHA
     };
 });
-
-window.onclick = (e) => { 
-    if (e.target.classList.contains('modal')) e.target.style.display = "none"; 
-};
 
 // Expor funções globalmente
 window.removerProfessor = removerProfessor;
