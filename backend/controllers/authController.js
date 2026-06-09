@@ -52,7 +52,10 @@ if (!senhaValida) {
             }
         });
     } catch (error) {
+        console.error("ERRO DE LOGIN");
         console.error(error);
-        res.status(500).json({ message: 'Erro interno do servidor' });
+        res.status(500).json({ message: error.message });
     }
 };
+
+
