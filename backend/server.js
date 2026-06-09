@@ -12,7 +12,6 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'OK', message: 'Backend funcionando!' });
 });
 
-
 // Rotas de autenticação
 const authRoutes = require('./routes/authRoutes');
 app.use('/api/auth', authRoutes);
@@ -20,6 +19,26 @@ app.use('/api/auth', authRoutes);
 // Rotas do professor
 const professorRoutes = require('./routes/professorRoutes');
 app.use('/api/professor', professorRoutes);
+
+// ==================== ROTAS DE ALOCAÇÃO ====================
+
+// Importar controllers de alocação
+const alocacaoController = require('./controllers/alocacaoController');
+
+// POST /api/alocacao/executar - Executar o algoritmo de alocação
+app.post('/api/alocacao/executar', alocacaoController.executarAlocacao);
+
+// POST /api/alocacao/pre-visualizar - Pré-visualizar horário (sem guardar)
+app.post('/api/alocacao/pre-visualizar', alocacaoController.preVisualizar);
+
+// GET /api/alocacao - Ver todas as alocações
+app.get('/api/alocacao', alocacaoController.getAlocacoes);
+
+// GET /api/alocacao/conflitos - Ver todos os conflitos
+app.get('/api/alocacao/conflitos', alocacaoController.getConflitos);
+
+// GET /api/alocacao/historico - Ver histórico de alocações
+app.get('/api/alocacao/historico', alocacaoController.getHistorico);
 
 // ==================== ROTAS DA SECRETARIA ====================
 
@@ -351,19 +370,29 @@ app.delete('/api/secretaria/salas/:id', async (req, res) => {
     }
 });
 
-// ==================== ROTAS DE ALOCAÇÃO ====================
+// ==================== ROTA CONFIGURAÇÕES PROFESSORES ====================
 
-// Importar controllers de alocação
-const alocacaoController = require('./controllers/alocacaoController');
-
-// POST /api/alocacao/executar - Executar o algoritmo de alocação
-app.post('/api/alocacao/executar', alocacaoController.executarAlocacao);
-
-// GET /api/alocacao - Ver todas as alocações
-app.get('/api/alocacao', alocacaoController.getAlocacoes);
-
-// GET /api/alocacao/conflitos - Ver todos os conflitos
-app.get('/api/alocacao/conflitos', alocacaoController.getConflitos);
+// GET /api/secretaria/configuracoes - Ver todas as configurações dos professores
+app.get('/api/secretaria/configuracoes', async (req, res) => {
+    try {
+        const db = require('./config/database');
+        const [rows] = await db.execute(`
+            SELECT 
+                u.nome as professor_nome,
+                c.disciplina_nome,
+                c.total_aulas,
+                c.perc_lab,
+                c.perc_conf
+            FROM config_disciplinas c
+            JOIN users u ON u.id = c.professor_id
+            ORDER BY u.nome, c.disciplina_nome
+        `);
+        res.json({ success: true, configuracoes: rows });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Erro ao buscar configurações' });
+    }
+});
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

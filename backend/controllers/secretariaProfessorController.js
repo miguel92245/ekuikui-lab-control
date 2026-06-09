@@ -1,5 +1,6 @@
 const Professor = require('../models/Professor');
 const bcrypt = require('bcryptjs');
+const db = require('../config/database');
 
 // Listar todos os professores
 const getAll = async (req, res) => {
@@ -35,16 +36,16 @@ const create = async (req, res) => {
         if (!nome || !email || !senha) {
             return res.status(400).json({ message: 'Nome, email e senha são obrigatórios' });
         }
+        
         // Validar domínio do email
-const dominiosPermitidos = ['.ao', '.com', '.edu.ao'];
-const dominioValido = dominiosPermitidos.some(dominio =>
-    email.toLowerCase().endsWith(dominio)
-);
-if (!dominioValido) {
-    return res.status(400).json({
-        message: 'O email deve terminar com .ao, .com ou .edu.ao'
-    });
-}
+        const dominiosPermitidos = ['.ao', '.com', '.edu.ao'];
+        const dominioValido = dominiosPermitidos.some(dominio =>
+            email.toLowerCase().endsWith(dominio)
+        );
+        if (!dominioValido) {
+            return res.status(400).json({ message: 'O email deve terminar com .ao, .com ou .edu.ao' });
+        }
+        
         const senhaHash = await bcrypt.hash(senha, 10);
         const disciplinasArray = disciplinas ? disciplinas.split(',').map(d => d.trim()) : [];
         
@@ -97,4 +98,25 @@ const remove = async (req, res) => {
     }
 };
 
-module.exports = { getAll, getById, create, update, remove };
+// ==================== NOVA FUNÇÃO: BUSCAR CONFIGURAÇÕES DOS PROFESSORES ====================
+const getConfiguracoes = async (req, res) => {
+    try {
+        const [rows] = await db.execute(`
+            SELECT 
+                u.nome as professor_nome,
+                c.disciplina_nome,
+                c.total_aulas,
+                c.perc_lab,
+                c.perc_conf
+            FROM config_disciplinas c
+            JOIN users u ON u.id = c.professor_id
+            ORDER BY u.nome, c.disciplina_nome
+        `);
+        res.json({ success: true, configuracoes: rows });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Erro ao buscar configurações' });
+    }
+};
+
+module.exports = { getAll, getById, create, update, remove, getConfiguracoes };

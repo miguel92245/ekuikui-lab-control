@@ -45,6 +45,23 @@ const executarAlocacao = async (req, res) => {
     }
 };
 
+// ==================== PRÉ-VISUALIZAR HORÁRIO (NOVO) ====================
+const preVisualizar = async (req, res) => {
+    try {
+        const { alocacoes, conflitos } = await gerarAlocacao();
+        
+        res.json({
+            success: true,
+            alocacoes: alocacoes,
+            conflitos: conflitos,
+            message: `Pré-visualização: ${alocacoes.length} aulas alocadas, ${conflitos.length} conflitos.`
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Erro ao gerar pré-visualização' });
+    }
+};
+
 const getAlocacoes = async (req, res) => {
     try {
         const [rows] = await db.execute('SELECT * FROM alocacoes ORDER BY dia, hora_inicio');
@@ -63,4 +80,13 @@ const getConflitos = async (req, res) => {
     }
 };
 
-module.exports = { executarAlocacao, getAlocacoes, getConflitos };
+const getHistorico = async (req, res) => {
+    try {
+        const [rows] = await db.execute('SELECT * FROM historico_alocacoes ORDER BY semestre DESC, dia, hora_inicio');
+        res.json({ success: true, historico: rows });
+    } catch (error) {
+        res.status(500).json({ message: 'Erro ao buscar histórico' });
+    }
+};
+
+module.exports = { executarAlocacao, getAlocacoes, getConflitos, getHistorico, preVisualizar };
