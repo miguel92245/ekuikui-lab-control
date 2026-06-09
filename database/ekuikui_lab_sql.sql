@@ -53,8 +53,8 @@ CREATE TABLE IF NOT EXISTS `alocacoes` (
 
 INSERT INTO `alocacoes` (`id`, `professor_nome`, `disciplina`, `turma_nome`, `num_alunos`, `dia`, `hora_inicio`, `hora_fim`, `lab_nome`, `lab_capacidade`, `created_at`) VALUES
 (7, 'Michael Ferreira', 'Programação Web', 'INF2', 35, 'Segunda', '10:00:00', '12:00:00', 'Lab. Grande', 50, '2026-05-19 01:27:38'),
-(8, 'Michael Ferreira', 'Base de Dados', 'INF2', 35, 'Quarta', '08:00:00', '10:00:00', 'Lab. Grande', 50, '2026-05-19 01:27:38'),
-(9, 'Julsuel Santos', 'Anatomia', 'ENF1', 28, 'Terça', '14:00:00', '16:00:00', 'Lab. Grande', 50, '2026-05-19 01:27:38');
+(8, 'fernando bandeira', 'Base de Dados', 'INF2', 35, 'Quarta', '08:00:00', '10:00:00', 'Lab. Grande', 50, '2026-05-19 01:27:38'),
+(9, 'venancio amilton', 'Anatomia', 'ENF1', 28, 'Terça', '14:00:00', '16:00:00', 'Lab. Grande', 50, '2026-05-19 01:27:38');
 
 -- --------------------------------------------------------
 
@@ -82,8 +82,8 @@ CREATE TABLE IF NOT EXISTS `aulas` (
 
 INSERT INTO `aulas` (`id`, `professor_nome`, `disciplina`, `turma_nome`, `num_alunos`, `dia`, `hora_inicio`, `hora_fim`, `tipo_aula`) VALUES
 (1, 'Michael Ferreira', 'Programação Web', 'INF2', 35, 'Segunda', '10:00:00', '12:00:00', 'Prática'),
-(2, 'Michael Ferreira', 'Base de Dados', 'INF2', 35, 'Quarta', '08:00:00', '10:00:00', 'Prática'),
-(3, 'Julsuel Santos', 'Anatomia', 'ENF1', 28, 'Terça', '14:00:00', '16:00:00', 'Prática');
+(2, 'fernando bandeira', 'Base de Dados', 'INF2', 35, 'Quarta', '08:00:00', '10:00:00', 'Prática'),
+(3, 'venancio amilton', 'Anatomia', 'ENF1', 28, 'Terça', '14:00:00', '16:00:00', 'Prática');
 
 -- --------------------------------------------------------
 

@@ -11,21 +11,36 @@ exports.login = async (req, res) => {
         }
 
         const user = await User.findByEmail(email);
-        if (!user) {
-            return res.status(401).json({ message: 'Credenciais inválidas' });
-        }
 
-        // COMPARAÇÃO 
-        if (user.senha !== senha) {
-            return res.status(401).json({ message: 'Credenciais inválidas' });
-        }
- // Gerar token JWT
+if (!user) {
+    return res.status(401).json({
+        message: 'Credenciais inválidas'
+    });
+}
+
+let senhaValida = false;
+
+if (user.senha.startsWith('$2')) {
+    senhaValida = await bcrypt.compare(
+        senha,
+        user.senha
+    );
+} else {
+    senhaValida = (senha === user.senha);
+}
+
+if (!senhaValida) {
+    return res.status(401).json({
+        message: 'Credenciais inválidas'
+    });
+}
+
         const token = jwt.sign(
             { id: user.id, email: user.email, tipo: user.tipo, nome: user.nome },
             process.env.JWT_SECRET,
             { expiresIn: '2h' }
         );
-// Devolver resposta
+
         res.json({
             message: 'Login realizado com sucesso!',
             token,

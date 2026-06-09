@@ -12,6 +12,7 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'OK', message: 'Backend funcionando!' });
 });
 
+
 // Rotas de autenticação
 const authRoutes = require('./routes/authRoutes');
 app.use('/api/auth', authRoutes);
@@ -350,6 +351,29 @@ app.delete('/api/secretaria/salas/:id', async (req, res) => {
     }
 });
 
+// ==================== ROTA CONFIGURAÇÕES PROFESSORES ====================
+
+// GET /api/secretaria/configuracoes - Ver todas as configurações dos professores
+app.get('/api/secretaria/configuracoes', async (req, res) => {
+    try {
+        const db = require('./config/database');
+        const [rows] = await db.execute(`
+            SELECT 
+                u.nome as professor_nome,
+                c.disciplina_nome,
+                c.total_aulas,
+                c.perc_lab,
+                c.perc_conf
+            FROM config_disciplinas c
+            JOIN users u ON u.id = c.professor_id
+            ORDER BY u.nome, c.disciplina_nome
+        `);
+        res.json({ success: true, configuracoes: rows });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Erro ao buscar configurações' });
+    }
+});
 // ==================== ROTAS DE ALOCAÇÃO ====================
 
 // Importar controllers de alocação

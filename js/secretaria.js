@@ -7,6 +7,36 @@ let salas = [];
 let alocacoes = [];
 let conflitos = [];
 
+// ==================== CARREGAR CONFIGURAÇÕES DOS PROFESSORES ====================
+async function carregarConfiguracoes() {
+    try {
+        const data = await apiRequest('/secretaria/configuracoes');
+        const configuracoes = data.configuracoes || [];
+        
+        const tbody = document.querySelector("#tabelaConfig tbody");
+        if (!tbody) return;
+        
+        if (configuracoes.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">Nenhuma configuração enviada pelos professores</td></tr>';
+            return;
+        }
+        
+        let html = '';
+        for (let c of configuracoes) {
+            html += `<tr>
+                <td>${c.professor_nome || '?'}</td>
+                <td>${c.disciplina_nome || '?'}</td>
+                <td>${c.total_aulas || '?'}</td>
+                <td>${c.perc_lab || '?'}%</td>
+                <td>${c.perc_conf || '?'}%</td>
+            </tr>`;
+        }
+        tbody.innerHTML = html;
+    } catch (error) {
+        console.error('Erro ao carregar configurações:', error);
+    }
+}
+
 // ==================== CARREGAR DADOS INICIAIS ====================
 async function carregarDados() {
     try {
@@ -246,6 +276,35 @@ async function removerProfessor(id) {
     }
 }
 
+async function carregarReclamacoes() { // Função assíncrona pra buscar reclamações
+    const div = document.getElementById('aba-reclamacoes'); // Pega div da aba reclamações
+
+    try { // Tenta buscar da API
+        const res = await fetch('/api/reclamacoes'); // Faz GET na rota da API
+        const reclamacoes = await res.json(); // Converte resposta pra array JS
+
+        if(reclamacoes.length === 0) { // Verifica se array está vazio
+            div.innerHTML = '<p>Nenhuma reclamação registrada</p>'; // Mostra mensagem vazia
+            return; // Para função aqui
+        }
+
+        let html = '<h3>Reclamações dos Professores</h3>'; // Inicia HTML com título
+        reclamacoes.forEach(r => { // Percorre cada reclamação
+            html += `<div style="border:1px solid #ccc; margin:10px; padding:10px">`; // Abre card com borda
+            html += `<b>Prof: ${r.prof_nome}</b><br>`; // Mostra nome do professor
+            html += `<b>Assunto:</b> ${r.assunto}<br>`; // Mostra assunto
+            html += `<b>Mensagem:</b> ${r.mensagem}<br>`; // Mostra mensagem que ele escreveu
+            html += `<small>Enviado em: ${new Date(r.criado_em).toLocaleString()}</small>`; // Mostra data formatada
+            html += `</div>`; // Fecha card
+        });
+        div.innerHTML = html; // Joga HTML dentro da div da secretaria
+    } catch(erro) { // Se der erro
+        div.innerHTML = '<p style="color:red">Erro ao carregar</p>'; // Mostra erro vermelho
+    }
+} // Fecha função
+
+
+
 async function removerTurma(id) {
     if (!confirm('Remover esta turma?')) return;
     try {
@@ -294,7 +353,18 @@ document.getElementById("formProfessor").addEventListener("submit", async (e) =>
         mostrarToast('Preencha todos os campos', 'error');
         return;
     }
-    
+    // Validar domínio do email
+const dominiosPermitidos = ['.ao', '.com', '.edu.ao'];
+
+const dominioValido = dominiosPermitidos.some(dominio =>
+    email.toLowerCase().endsWith(dominio)
+);
+
+if (!dominioValido) {
+    return res.status(400).json({
+        message: 'O email deve terminar com .ao, .com ou .edu.ao'
+    });
+}
     try {
         await apiRequest('/secretaria/professores', {
             method: 'POST',
@@ -453,12 +523,9 @@ document.querySelectorAll(".tab").forEach(tab => {
         if (tab.dataset.tab === "tab-laboratorios") carregarLaboratorios();
         if (tab.dataset.tab === "tab-salas") carregarSalas();
         if (tab.dataset.tab === "tab-conflitos") carregarConflitos();
+        if (tab.dataset.tab === "tab-config-professores") carregarConfiguracoes(); // NOVA LINHA
     };
 });
-
-window.onclick = (e) => { 
-    if (e.target.classList.contains('modal')) e.target.style.display = "none"; 
-};
 
 // Expor funções globalmente
 window.removerProfessor = removerProfessor;
