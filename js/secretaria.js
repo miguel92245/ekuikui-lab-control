@@ -17,8 +17,8 @@ async function carregarConfiguracoes() {
         if (!tbody) return;
         
         if (configuracoes.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">Nenhuma configuração enviada pelos professores</td></tr>';
-            return;
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">Nenhuma configuração enviada pelos professores</td><\/tr>';
+            return; 
         }
         
         let html = '';
@@ -35,6 +35,77 @@ async function carregarConfiguracoes() {
     } catch (error) {
         console.error('Erro ao carregar configurações:', error);
     }
+}
+
+// ==================== PRÉ-VISUALIZAR HORÁRIO ====================
+async function preVisualizarHorario() {
+    try {
+        mostrarToast('A gerar pré-visualização...', 'info');
+        
+        const data = await apiRequest('/alocacao/pre-visualizar', { method: 'POST' });
+        
+        if (data.alocacoes && data.alocacoes.length > 0) {
+            mostrarPreVisualizacao(data.alocacoes, data.conflitos);
+        } else {
+            mostrarToast('Nenhuma aula foi alocada. Verifique se há aulas práticas e laboratórios.', 'warning');
+        }
+        
+    } catch (error) {
+        console.error('Erro na pré-visualização:', error);
+        mostrarToast('Erro ao gerar pré-visualização', 'error');
+    }
+}
+
+// Mostrar pré-visualização num modal
+function mostrarPreVisualizacao(alocacoes, conflitos) {
+    let modal = document.getElementById('modalPreVisualizacao');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'modalPreVisualizacao';
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 90%; width: auto;">
+                <div class="modal-header">
+                    <h3><i class="fas fa-eye"></i> Pré-visualização do Horário</h3>
+                    <span class="close-modal" onclick="fecharModal('modalPreVisualizacao')">&times;</span>
+                </div>
+                <div id="preVisualizacaoConteudo" style="max-height: 70vh; overflow-y: auto;"></div>
+                <div class="modal-buttons" style="margin-top: 1rem;">
+                    <button class="btn btn-warning" onclick="fecharModal('modalPreVisualizacao')">Fechar</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    
+    let html = '<table class="data-table" style="width:100%; border-collapse: collapse;">';
+    html += '<thead><tr style="background:#1a1a2e; color:#ffd700;">';
+    html += '<th>Professor</th><th>Disciplina</th><th>Turma</th><th>Dia</th><th>Horário</th><th>Laboratório</th>';
+    html += '<\/tr><\/thead><tbody>';
+    
+    for (let a of alocacoes) {
+        html += `<tr>
+            <td>${a.professor_nome || '?'}</td>
+            <td>${a.disciplina || '?'}</td>
+            <td>${a.turma_nome || '?'}</td>
+            <td>${a.dia || '?'}</td>
+            <td>${a.hora_inicio || '?'} - ${a.hora_fim || '?'}</td>
+            <td>${a.lab_nome || '?'} (${a.lab_capacidade || '?'} lug.)</td>
+        </tr>`;
+    }
+    html += '<\/tbody><\/table>';
+    
+    if (conflitos && conflitos.length > 0) {
+        html += '<div style="margin-top: 1rem; padding: 1rem; background: #fef2f2; border-left: 4px solid #dc2626;">';
+        html += '<strong><i class="fas fa-exclamation-triangle"></i> Conflitos encontrados:</strong><br>';
+        for (let c of conflitos) {
+            html += `<small>❌ ${c.disciplina || '?'} - ${c.motivo || '?'}</small><br>`;
+        }
+        html += '<\/div>';
+    }
+    
+    document.getElementById('preVisualizacaoConteudo').innerHTML = html;
+    modal.style.display = 'flex';
 }
 
 // ==================== CARREGAR DADOS INICIAIS ====================
@@ -152,7 +223,7 @@ function renderizarProfessores() {
     if (!tbody) return;
     
     if (!professores || professores.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center">Nenhum professor cadastrado</td></tr>';
+        tbody.innerHTML = '<td><td colspan="4" style="text-align:center">Nenhum professor cadastrado</td><\/tr>';
         return;
     }
     
@@ -173,7 +244,7 @@ function renderizarTurmas() {
     if (!tbody) return;
     
     if (!turmas || turmas.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center">Nenhuma turma cadastrada</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center">Nenhuma turma cadastrada</td><\/tr>';
         return;
     }
     
@@ -194,7 +265,7 @@ function renderizarLaboratorios() {
     if (!tbody) return;
     
     if (!laboratorios || laboratorios.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Nenhum laboratório cadastrado</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Nenhum laboratório cadastrado</td><\/tr>';
         return;
     }
     
@@ -214,7 +285,7 @@ function renderizarSalas() {
     if (!tbody) return;
     
     if (!salas || salas.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Nenhuma sala cadastrada</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Nenhuma sala cadastrada</td><\/tr>';
         return;
     }
     
@@ -244,7 +315,7 @@ function renderizarConflitos() {
             <strong>❌ ${c.disciplina || '?'}</strong> - Turma: ${c.turma_nome || '?'}<br>
             <small>Professor: ${c.professor_nome || '?'} | ${c.dia || '?'}</small><br>
             <span style="color:#dc2626;">Motivo: ${c.motivo || '?'}</span>
-        </div>`;
+        <\/div>`;
     }
     container.innerHTML = html;
 }
@@ -256,7 +327,7 @@ function renderizarEstatisticas() {
     const labsElem = document.getElementById("totalLaboratorios");
     const conflitosElem = document.getElementById("conflitosCount");
     
-    if (profElem) profElem.innerText = professores ? professores.length : 0;
+    if (profElem) profElem.innerText = professors ? professors.length : 0;
     if (turmasElem) turmasElem.innerText = turmas ? turmas.length : 0;
     if (salasElem) salasElem.innerText = salas ? salas.length : 0;
     if (labsElem) labsElem.innerText = laboratorios ? laboratorios.length : 0;
@@ -276,34 +347,29 @@ async function removerProfessor(id) {
     }
 }
 
-async function carregarReclamacoes() { // Função assíncrona pra buscar reclamações
-    const div = document.getElementById('aba-reclamacoes'); // Pega div da aba reclamações
-
-    try { // Tenta buscar da API
-        const res = await fetch('/api/reclamacoes'); // Faz GET na rota da API
-        const reclamacoes = await res.json(); // Converte resposta pra array JS
-
-        if(reclamacoes.length === 0) { // Verifica se array está vazio
-            div.innerHTML = '<p>Nenhuma reclamação registrada</p>'; // Mostra mensagem vazia
-            return; // Para função aqui
+async function carregarReclamacoes() {
+    const div = document.getElementById('aba-reclamacoes');
+    try {
+        const res = await fetch('/api/reclamacoes');
+        const reclamacoes = await res.json();
+        if(reclamacoes.length === 0) {
+            div.innerHTML = '<p>Nenhuma reclamação registrada</p>';
+            return;
         }
-
-        let html = '<h3>Reclamações dos Professores</h3>'; // Inicia HTML com título
-        reclamacoes.forEach(r => { // Percorre cada reclamação
-            html += `<div style="border:1px solid #ccc; margin:10px; padding:10px">`; // Abre card com borda
-            html += `<b>Prof: ${r.prof_nome}</b><br>`; // Mostra nome do professor
-            html += `<b>Assunto:</b> ${r.assunto}<br>`; // Mostra assunto
-            html += `<b>Mensagem:</b> ${r.mensagem}<br>`; // Mostra mensagem que ele escreveu
-            html += `<small>Enviado em: ${new Date(r.criado_em).toLocaleString()}</small>`; // Mostra data formatada
-            html += `</div>`; // Fecha card
+        let html = '<h3>Reclamações dos Professores</h3>';
+        reclamacoes.forEach(r => {
+            html += `<div style="border:1px solid #ccc; margin:10px; padding:10px">`;
+            html += `<b>Prof: ${r.prof_nome}</b><br>`;
+            html += `<b>Assunto:</b> ${r.assunto}<br>`;
+            html += `<b>Mensagem:</b> ${r.mensagem}<br>`;
+            html += `<small>Enviado em: ${new Date(r.criado_em).toLocaleString()}</small>`;
+            html += `<\/div>`;
         });
-        div.innerHTML = html; // Joga HTML dentro da div da secretaria
-    } catch(erro) { // Se der erro
-        div.innerHTML = '<p style="color:red">Erro ao carregar</p>'; // Mostra erro vermelho
+        div.innerHTML = html;
+    } catch(erro) {
+        div.innerHTML = '<p style="color:red">Erro ao carregar</p>';
     }
-} // Fecha função
-
-
+}
 
 async function removerTurma(id) {
     if (!confirm('Remover esta turma?')) return;
@@ -353,18 +419,13 @@ document.getElementById("formProfessor").addEventListener("submit", async (e) =>
         mostrarToast('Preencha todos os campos', 'error');
         return;
     }
-    // Validar domínio do email
-const dominiosPermitidos = ['.ao', '.com', '.edu.ao'];
-
-const dominioValido = dominiosPermitidos.some(dominio =>
-    email.toLowerCase().endsWith(dominio)
-);
-
-if (!dominioValido) {
-    return res.status(400).json({
-        message: 'O email deve terminar com .ao, .com ou .edu.ao'
-    });
-}
+    
+    const dominiosPermitidos = ['.ao', '.com', '.edu.ao'];
+    const dominioValido = dominiosPermitidos.some(dominio => email.toLowerCase().endsWith(dominio));
+    if (!dominioValido) {
+        mostrarToast('O email deve terminar com .ao, .com ou .edu.ao', 'error');
+        return;
+    }
     try {
         await apiRequest('/secretaria/professores', {
             method: 'POST',
@@ -476,6 +537,11 @@ document.getElementById("btnPublicar").onclick = () => {
     }
 };
 
+// ==================== PRÉ-VISUALIZAR (NOVO BOTÃO) ====================
+document.getElementById("btnPreVisualizar").onclick = () => {
+    preVisualizarHorario();
+};
+
 // ==================== LOGOUT ====================
 document.getElementById("logoutBtn").onclick = () => {
     localStorage.removeItem('labUser');
@@ -517,15 +583,18 @@ document.querySelectorAll(".tab").forEach(tab => {
         tab.classList.add("active");
         document.getElementById(tab.dataset.tab).classList.add("active");
         
-        // Recarregar dados quando mudar de tab
         if (tab.dataset.tab === "tab-professores") carregarProfessores();
         if (tab.dataset.tab === "tab-turmas") carregarTurmas();
         if (tab.dataset.tab === "tab-laboratorios") carregarLaboratorios();
         if (tab.dataset.tab === "tab-salas") carregarSalas();
         if (tab.dataset.tab === "tab-conflitos") carregarConflitos();
-        if (tab.dataset.tab === "tab-config-professores") carregarConfiguracoes(); // NOVA LINHA
+        if (tab.dataset.tab === "tab-config-professores") carregarConfiguracoes();
     };
 });
+
+window.onclick = (e) => { 
+    if (e.target.classList.contains('modal')) e.target.style.display = "none"; 
+};
 
 // Expor funções globalmente
 window.removerProfessor = removerProfessor;
